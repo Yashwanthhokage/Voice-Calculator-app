@@ -20,6 +20,13 @@
     <section class="display" aria-live="polite">
       <input id="screen" type="text" aria-label="Calculator display" readonly>
     </section>
+    <div class="history-container">
+  <div class="history-header">
+    <span>History</span>
+    <button id="clearHistory">Clear</button>
+  </div>
+  <ul id="historyList"></ul>
+    </div>
 
     <section class="controls">
       <button id="micBtn" aria-label="Voice input">🎤</button>
@@ -45,12 +52,5 @@
   </main>
 
   <script src="app.js"></script>
-  <div class="history-container">
-  <div class="history-header">
-    <span>History</span>
-    <button id="clearHistory">Clear</button>
-  </div>
-  <ul id="historyList"></ul>
-  </div>
 </body>
 </html>
