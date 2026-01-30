@@ -151,6 +151,21 @@ function parseVoice(text) {
 
   try {
     let expr = text.toLowerCase();
+    // ---------- DIRECT MATH EXPRESSION FALLBACK ----------
+if (/^[0-9+\-*/().\s]+$/.test(expr)) {
+  try {
+    const result = eval(expr);
+    if (!isNaN(result)) {
+      const rounded = Number(result.toFixed(2));
+      screen.value = rounded;
+      addToHistory(expr, rounded);
+      speak(`The answer is ${rounded}`);
+      return;
+    }
+  } catch (e) {
+    // continue to AI parsing
+  }
+}
 
     /* ---------- NORMALIZE COMMON MISHEARS ---------- */
     expr = expr
