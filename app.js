@@ -1,4 +1,4 @@
-// ---------- HISTORY ----------
+      // ---------- HISTORY ----------
 const historyList = document.getElementById("historyList");
 const clearHistoryBtn = document.getElementById("clearHistory");
 
@@ -15,9 +15,10 @@ const buttons = document.querySelectorAll(".calc-btn");
 const micBtn = document.getElementById("micBtn");
 const clearBtn = document.getElementById("clearBtn");
 
-buttons.forEach(btn => {
-  btn.addEventListener("click", () => handleInput(btn.textContent));
-});
+// ❌ REMOVED DUPLICATE - This was causing double input
+// buttons.forEach(btn => {
+//   btn.addEventListener("click", () => handleInput(btn.textContent));
+// });
 
 // --------- AUDIO ---------
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -39,6 +40,7 @@ function speak(text) {
 }
 
 // --------- CALCULATOR ---------
+// ✅ KEEP ONLY ONE EVENT LISTENER
 buttons.forEach(btn => {
   btn.addEventListener("click", () => handleInput(btn.textContent));
 });
@@ -48,6 +50,7 @@ function handleInput(value) {
 
     case "C":
       screen.value = "";
+      beep(400); // Added feedback sound
       return;
 
     case "=":
@@ -95,9 +98,9 @@ function calculate() {
     if (isNaN(result)) throw "NaN";
 
     const rounded = Number(result.toFixed(2));
-screen.value = rounded;
-addToHistory(expression, rounded);
-speak(`Result is ${rounded}`);
+    screen.value = rounded;
+    addToHistory(expression, rounded);
+    speak(`Result is ${rounded}`);
   } catch {
     screen.value = "Error";
     speak("Invalid scientific expression");
@@ -276,9 +279,9 @@ function calculateFromVoiceAI(text) {
     if (isNaN(result)) throw "Invalid";
 
     const rounded = Number(result.toFixed(2));
-screen.value = rounded;
-addToHistory(expr, rounded);
-speak(`The answer is ${rounded}`);
+    screen.value = rounded;
+    addToHistory(expr, rounded);
+    speak(`The answer is ${rounded}`);
   } catch (err) {
     console.error(err);
     speak("Sorry, I couldn't understand");
@@ -294,4 +297,4 @@ function addToHistory(expression, result) {
   if (historyList.children.length > 10) {
     historyList.removeChild(historyList.lastChild);
   }
-}
+  }
