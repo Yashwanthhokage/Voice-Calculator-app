@@ -184,6 +184,19 @@ function calculateFromVoiceAI(text) {
 
     console.log("VOICE INPUT:", expr);
 
+    // ✅ FIX: Handle concatenated words like "oneplus" → "one plus"
+    expr = expr
+      .replace(/oneplus/g, "one plus")
+      .replace(/twoplus/g, "two plus")
+      .replace(/threeplus/g, "three plus")
+      .replace(/fourplus/g, "four plus")
+      .replace(/fiveplus/g, "five plus")
+      .replace(/sixplus/g, "six plus")
+      .replace(/sevenplus/g, "seven plus")
+      .replace(/eightplus/g, "eight plus")
+      .replace(/nineplus/g, "nine plus")
+      .replace(/tenplus/g, "ten plus");
+
     // ---------- NUMBER WORDS ----------
     const numbers = {
       zero: 0, one: 1, two: 2, three: 3, four: 4,
@@ -208,11 +221,15 @@ function calculateFromVoiceAI(text) {
       .replace(/\bpower|to the power of|raised\b/g, "**")
       .replace(/\bequals|equal to\b/g, "");
 
+    console.log("After operators:", expr);
+
     // ✅ CONVERT NUMBER WORDS BEFORE SMART PHRASES
     Object.keys(numbers).forEach(word => {
       const re = new RegExp("\\b" + word + "\\b", "g");
       expr = expr.replace(re, numbers[word]);
     });
+
+    console.log("After number conversion:", expr);
 
     // ---------- SMART PHRASES ----------
     expr = expr
