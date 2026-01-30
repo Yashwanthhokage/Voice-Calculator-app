@@ -190,11 +190,6 @@ function calculateFromVoiceAI(text) {
       ten: 10
     };
 
-    Object.keys(numbers).forEach(word => {
-      const re = new RegExp("\\b" + word + "\\b", "g");
-      expr = expr.replace(re, numbers[word]);
-    });
-
     // ---------- NORMALIZE COMMON MISHEARS ----------
     expr = expr
       .replace(/\bcause\b/g, "cos")
@@ -211,6 +206,12 @@ function calculateFromVoiceAI(text) {
       .replace(/\bdivide|divided by|over\b/g, "/")
       .replace(/\bpower|to the power of|raised\b/g, "**")
       .replace(/\bequals|equal to\b/g, "");
+
+    // ✅ CONVERT NUMBER WORDS BEFORE SMART PHRASES
+    Object.keys(numbers).forEach(word => {
+      const re = new RegExp("\\b" + word + "\\b", "g");
+      expr = expr.replace(re, numbers[word]);
+    });
 
     // ---------- SMART PHRASES ----------
     expr = expr
@@ -242,6 +243,18 @@ function calculateFromVoiceAI(text) {
 
     console.log("NORMALIZED:", expr);
 
+    // ✅ DIRECT MATH CHECK - If it's just numbers and operators, evaluate directly
+    if (/^[0-9+\-*/().]+$/.test(expr)) {
+      const result = eval(expr);
+      if (!isNaN(result)) {
+        const rounded = Number(result.toFixed(2));
+        screen.value = rounded;
+        addToHistory(expr, rounded);
+        speak(`The answer is ${rounded}`);
+        return;
+      }
+    }
+
     // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
 
@@ -259,7 +272,6 @@ function calculateFromVoiceAI(text) {
     beep(200);
   }
 }
-
 // --------- HISTORY ---------
 function addToHistory(expression, result) {
   const li = document.createElement("li");
