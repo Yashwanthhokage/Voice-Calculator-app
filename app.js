@@ -196,40 +196,39 @@ function calculateFromVoiceAI(text) {
 
     // ---------- NUMBER WORDS ----------
     const numbers = {
-      zero: 0, one: 1, two: 2, three: 3, four: 4,
-      five: 5, six: 6, seven: 7, eight: 8, nine: 9,
-      ten: 10, eleven: 11, twelve: 12
+      zero:0, one:1, two:2, three:3, four:4,
+      five:5, six:6, seven:7, eight:8, nine:9,
+      ten:10, eleven:11, twelve:12, thirteen:13,
+      fourteen:14, fifteen:15, sixteen:16, seventeen:17,
+      eighteen:18, nineteen:19, twenty:20,
+      thirty:30, forty:40, fifty:50, sixty:60,
+      seventy:70, eighty:80, ninety:90
     };
     Object.keys(numbers).forEach(word => {
       const re = new RegExp("\\b" + word + "\\b", "gi");
       expr = expr.replace(re, numbers[word]);
     });
 
+    // ---------- OPERATORS ----------
+    expr = expr
+      .replace(/\bplus\b/g, "+")
+      .replace(/\bminus\b/g, "-")
+      .replace(/\btimes|multiply|multiplied by|into\b/g, "*")
+      .replace(/\bdivide|divided by|over\b/g, "/")
+      .replace(/\bpower|to the power of|raised\b/g, "**");
+
     // ---------- HANDLE SHORTHAND √ EXPRESSIONS ----------
-    // 1) 5√5 -> 5*Math.sqrt(5)
+    // 5√5 -> 5*Math.sqrt(5), √16 -> Math.sqrt(16)
     expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
       if (num1) return `${num1}*Math.sqrt(${num2})`;
       return `Math.sqrt(${num2})`;
     });
 
-    // 2) Also handle 'root' like before: root 25 -> Math.sqrt(25)
+    // root 25 -> Math.sqrt(25)
     expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
 
-    // ---------- SIMPLE ARITHMETIC Bypass ----------
-    if (/^[0-9+\-*/().\s]+$/.test(expr)) {
-      const result = eval(expr);
-      screen.value = result;
-      speak(`The answer is ${result}`);
-      beep();
-      return;
-    }
-
-    // ---------- SCIENTIFIC AND NATURAL PHRASES ----------
+    // ---------- SCIENTIFIC FUNCTIONS ----------
     expr = expr
-      .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
-      .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
-      .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
-      .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2")
       .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
       .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
       .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
@@ -238,6 +237,13 @@ function calculateFromVoiceAI(text) {
       .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
       .replace(/\bpi\b/g, "Math.PI")
       .replace(/\be\b/g, "Math.E");
+
+    // ---------- SMART PHRASES ----------
+    expr = expr
+      .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
+      .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
+      .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
+      .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
 
     // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
