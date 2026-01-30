@@ -112,12 +112,20 @@ recognition.onerror = () => {
   micBtn.classList.remove("listening");
   speak("Voice error");
 };
-
 function parseVoice(text) {
+  console.log("VOICE RAW:", text);
+
   try {
     let expr = text.toLowerCase();
 
-    // -------- NUMBER WORDS --------
+    /* ---------- NORMALIZE COMMON MISHEARS ---------- */
+    expr = expr
+      .replace(/route|root|roof|routh/g, "root")
+      .replace(/squire|square|squared/g, "square")
+      .replace(/of/g, "")
+      .replace(/what is|calculate|find/g, "");
+
+    /* ---------- NUMBER WORDS ---------- */
     const numbers = {
       zero: 0, one: 1, two: 2, three: 3, four: 4,
       five: 5, six: 6, seven: 7, eight: 8, nine: 9,
@@ -128,27 +136,28 @@ function parseVoice(text) {
       expr = expr.replaceAll(word, numbers[word]);
     });
 
-    // -------- OPERATORS --------
+    /* ---------- OPERATORS ---------- */
     expr = expr
       .replace(/plus/g, "+")
       .replace(/minus/g, "-")
       .replace(/times|multiply|into/g, "*")
-      .replace(/divide|divided by|by/g, "/")
-      .replace(/power|raised to/g, "**");
+      .replace(/divide|divided/g, "/")
+      .replace(/power|raised/g, "**");
 
-    // -------- SCIENTIFIC --------
+    /* ---------- SCIENTIFIC ---------- */
     expr = expr
-      .replace(/square root of|square root|root/g, "Math.sqrt(")
-      .replace(/logarithm of|log of|log/g, "Math.log10(")
-      .replace(/exponential of|exp of|exp/g, "Math.exp(")
-      .replace(/sine of|sin of|sin/g, "Math.sin(degToRad(")
-      .replace(/cosine of|cos of|cos/g, "Math.cos(degToRad(")
-      .replace(/tangent of|tan of|tan/g, "Math.tan(degToRad(");
+      .replace(/square root|root/g, "Math.sqrt(")
+      .replace(/logarithm|log/g, "Math.log10(")
+      .replace(/exponential|exp/g, "Math.exp(")
+      .replace(/sine|sin/g, "Math.sin(degToRad(")
+      .replace(/cosine|cos/g, "Math.cos(degToRad(")
+      .replace(/tangent|tan/g, "Math.tan(degToRad(");
 
-    // -------- CLEANUP --------
+    /* ---------- CLEAN ---------- */
     expr = expr.replace(/\s+/g, "");
-
     expr = autoCloseBrackets(expr);
+
+    console.log("PARSED EXPR:", expr);
 
     const result = eval(expr);
 
@@ -158,7 +167,8 @@ function parseVoice(text) {
     speak(`Result is ${result}`);
     beep();
 
-  } catch {
+  } catch (err) {
+    console.error(err);
     speak("Sorry, I couldn't understand");
     beep(200);
   }
