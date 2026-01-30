@@ -188,15 +188,14 @@ button:focus-visible {
   outline: 2px solid var(--primary);
 }
 .history-container {
-  margin-top: 16px;
-  padding: 12px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  color: #fff;
-  max-height: 200px;
-  overflow-y: auto;
+  max-height: 200px;      /* limit height */
+  overflow-y: auto;       /* scroll when too many items */
+  padding: 8px;
+  border: 1px solid var(--button-bg);
+  border-radius: 8px;
+  background-color: var(--bg-color);
 }
+
 
 .history-header {
   display: flex;
@@ -219,20 +218,6 @@ button:focus-visible {
   padding: 0;
   margin-top: 10px;
 }
-
-#historyList li {
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  font-size: 0.95rem;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 #historyList li {
   color: var(--text-color);       /* Text color adapts to light/dark mode */
   background-color: var(--button-bg); /* Optional: subtle background for each item */
@@ -241,6 +226,12 @@ button:focus-visible {
   margin-bottom: 4px;
   list-style: none;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .history-container {
   max-height: 200px;      /* limit height */
   overflow-y: auto;       /* scroll when too many items */
