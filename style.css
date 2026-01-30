@@ -1,35 +1,4 @@
-:root {
-  --bg-color: #ffffff;
-  --text-color: #222222;
-  --button-bg: #f1f1f1;
-  --button-text: #222222;
-  --display-bg: #eaeaea;
-  --display-text: #222222;
-}
 
-body.dark-mode {
-  --bg-color: #121212;
-  --text-color: #f1f1f1;
-  --button-bg: #1f1f1f;
-  --button-text: #f1f1f1;
-  --display-bg: #222222;
-  --display-text: #f1f1f1;
-}
-
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-button {
-  background-color: var(--button-bg);
-  color: var(--button-text);
-}
-
-#screen {
-  background-color: var(--display-bg);
-  color: var(--display-text);
-}
 :root {
   --primary: #6750A4;
   --on-primary: #FFFFFF;
@@ -63,6 +32,38 @@ body {
   padding: 20px;
   box-shadow: 0 12px 40px rgba(0,0,0,0.4);
   animation: scaleIn 0.4s ease;
+}
+:root {
+  --bg-color: #ffffff;
+  --text-color: #222222;
+  --button-bg: #f1f1f1;
+  --button-text: #222222;
+  --display-bg: #eaeaea;
+  --display-text: #222222;
+}
+
+body.dark-mode {
+  --bg-color: #121212;
+  --text-color: #f1f1f1;
+  --button-bg: #1f1f1f;
+  --button-text: #f1f1f1;
+  --display-bg: #222222;
+  --display-text: #f1f1f1;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+button {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+#screen {
+  background-color: var(--display-bg);
+  color: var(--display-text);
 }
 
 /* HEADER */
