@@ -245,16 +245,18 @@ function calculateFromVoiceAI(text) {
     });
     expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
 
-    // ---------- SCIENTIFIC FUNCTIONS ----------
-    expr = expr
-      .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
-      .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
-      .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
-      .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
-      .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
-      .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
-      .replace(/\bpi\b/g, "Math.PI");
-
+// ✅ SCIENTIFIC FUNCTIONS - Handle "exp", "exponent", and variations
+expr = expr
+  .replace(/\bexponent\s*(\d+(\.\d+)?)/g, "Math.exp($1)")  // "exponent 2"
+  .replace(/\bexponent(\d+(\.\d+)?)/g, "Math.exp($1)")      // "exponent2"
+  .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")        // "exp 2"
+  .replace(/\bexp(\d+(\.\d+)?)/g, "Math.exp($1)")           // "exp2"
+  .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
+  .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
+  .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
+  .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
+  .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
+  .replace(/\bpi\b/g, "Math.PI");
     // ---------- CLEAN SPACES ----------
     expr = expr.replace(/\s+/g, "");
 
