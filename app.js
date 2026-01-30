@@ -154,7 +154,19 @@ function autoCloseBrackets(expr) {
   const close = (expr.match(/\)/g) || []).length;
   return expr + ")".repeat(open - close);
 }
-function calculateFromVoiceAI(text) {
+  function calculateFromVoiceAI(text) {
+  try {
+    let raw = text.trim();
+
+    // DIRECT MATH (1+1, 2*3, etc.)
+    if (/^[0-9+\-*/().\s]+$/.test(raw)) {
+      const result = eval(raw);
+      const rounded = Number(result.toFixed(2));
+      screen.value = rounded;
+      addToHistory(raw, rounded);
+      speak(`The answer is ${rounded}`);
+      return;
+    }
   try {
     let expr = text.toLowerCase().trim();
 
@@ -236,7 +248,7 @@ function calculateFromVoiceAI(text) {
       .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
       .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
       .replace(/\bpi\b/g, "Math.PI")
-      .replace(/\be\b/g, "Math.E");
+   expr = expr.replace(/\bpi\b/g, "Math.PI");
 
     // ---------- SMART PHRASES ----------
     expr = expr
