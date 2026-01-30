@@ -158,33 +158,33 @@ recognition.onerror = function() {
   micBtn.classList.remove("listening");
   speak("Voice error");
 };
+
 // --------- VOICE COMMAND PARSER ---------
 function calculateFromVoiceAI(text) {
-  const debugLog = document.getElementById("debugLog");
-  
-  function log(msg) {
-    console.log(msg);
-    debugLog.innerHTML += msg + "<br>";
-    debugLog.scrollTop = debugLog.scrollHeight;
-  }
-  
-  debugLog.innerHTML = ""; // Clear previous logs
-  
   try {
     let expr = text.toLowerCase().trim();
 
-    log("🎤 INPUT: " + expr);
+    console.log("VOICE INPUT:", expr);
 
     // ---------- NUMBER WORDS ----------
     const numbers = {
       zero: 0, one: 1, two: 2, three: 3, four: 4,
       five: 5, six: 6, seven: 7, eight: 8, nine: 9,
-      ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14,
-      fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
-      twenty: 20, thirty: 30, forty: 40, fifty: 50,
-      sixty: 60, seventy: 70, eighty: 80, ninety: 90,
-      hundred: 100, thousand: 1000
+      ten: 10
     };
+
+    Object.keys(numbers).forEach(word => {
+      const re = new RegExp("\\b" + word + "\\b", "g");
+      expr = expr.replace(re, numbers[word]);
+    });
+
+    // ---------- NORMALIZE COMMON MISHEARS ----------
+    expr = expr
+      .replace(/\bcause\b/g, "cos")
+      .replace(/\bcourse\b/g, "cos")
+      .replace(/\broute\b/g, "root")
+      .replace(/\bsquare root of\b/g, "root")
+      .replace(/\bsquare root\b/g, "root");
 
     // ---------- OPERATORS ----------
     expr = expr
@@ -195,28 +195,41 @@ function calculateFromVoiceAI(text) {
       .replace(/\bpower|to the power of|raised\b/g, "**")
       .replace(/\bequals|equal to\b/g, "");
 
-    log("➕ After ops: " + expr);
+    // ---------- SMART PHRASES ----------
+    expr = expr
+      .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
+      .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
+      .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
+      .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
 
-    // ---------- CONVERT NUMBER WORDS ----------
-    Object.keys(numbers).forEach(word => {
-      const re = new RegExp("\\b" + word + "\\b", "g");
-      expr = expr.replace(re, numbers[word]);
+    // ---------- HANDLE √ EXPRESSIONS ----------
+    expr = expr.replace(/\s*√\s*/g, "√");
+    expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
+      if (num1) return `${num1}*Math.sqrt(${num2})`;
+      return `Math.sqrt(${num2})`;
     });
+    expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
 
-    log("🔢 After nums: " + expr);
+    // ---------- SCIENTIFIC FUNCTIONS ----------
+    expr = expr
+      .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
+      .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
+      .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
+      .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
+      .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
+      .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
+      .replace(/\bpi\b/g, "Math.PI");
 
     // ---------- CLEAN SPACES ----------
     expr = expr.replace(/\s+/g, "");
 
-    log("✅ FINAL: " + expr);
+    console.log("NORMALIZED:", expr);
 
     // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
 
     // ---------- EVALUATE ----------
     const result = eval(expr);
-    log("💡 RESULT: " + result);
-    
     if (isNaN(result)) throw "Invalid";
 
     const rounded = Number(result.toFixed(2));
@@ -224,11 +237,12 @@ function calculateFromVoiceAI(text) {
     addToHistory(expr, rounded);
     speak(`The answer is ${rounded}`);
   } catch (err) {
-    log("❌ ERROR: " + err);
+    console.error(err);
     speak("Sorry, I couldn't understand");
     beep(200);
   }
 }
+
 // --------- HISTORY ---------
 function addToHistory(expression, result) {
   const li = document.createElement("li");
@@ -239,4 +253,4 @@ function addToHistory(expression, result) {
   if (historyList.children.length > 10) {
     historyList.removeChild(historyList.lastChild);
   }
-}
+          }
