@@ -138,27 +138,44 @@ const recognition = new SpeechRecognition();
 recognition.lang = "en-US";
 recognition.continuous = false;
 
+let isProcessing = false; // ✅ NEW: Prevent duplicate processing
+
 micBtn.addEventListener("click", () => {
+  if (isProcessing) return; // ✅ Ignore if already processing
+  
   recognition.start();
   micBtn.classList.add("listening");
   beep(900);
 });
 
 recognition.onresult = function(event) {
+  if (isProcessing) return; // ✅ Prevent duplicate processing
+  
+  isProcessing = true; // ✅ Lock processing
+  
   const transcript = event.results[0][0].transcript;
-  micBtn.classList.remove("listening"); // ✅ FIXED: Remove listening state
+  micBtn.classList.remove("listening");
   calculateFromVoiceAI(transcript);
+  
+  // ✅ Unlock after 1 second
+  setTimeout(() => {
+    isProcessing = false;
+  }, 1000);
 };
 
 recognition.onend = function() {
-  micBtn.classList.remove("listening"); // ✅ FIXED: Remove listening state when done
+  micBtn.classList.remove("listening");
+  // ✅ Ensure unlocking even if no result
+  setTimeout(() => {
+    isProcessing = false;
+  }, 500);
 };
 
-recognition.onerror = function() {
+recognition.onerror = function(event) {
   micBtn.classList.remove("listening");
   speak("Voice error");
+  isProcessing = false; // ✅ Reset on error
 };
-
 // --------- VOICE COMMAND PARSER ---------
 function calculateFromVoiceAI(text) {
   try {
