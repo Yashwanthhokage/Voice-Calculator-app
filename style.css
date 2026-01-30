@@ -159,8 +159,6 @@ button:hover {
 
 /* KEYPAD */
 .keypad {
-  background: #3A2F2F;
-  color: #FFDAD6;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
@@ -168,8 +166,6 @@ button:hover {
 
 /* SCIENTIFIC */
 .scientific {
-  background: #3A2F2F;
-  color: #FFDAD6;
   margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -243,5 +239,55 @@ button:focus-visible {
   border: 1px solid var(--button-bg);
   border-radius: 8px;
   background-color: var(--bg-color);
+}
+/* ===============================
+   LIGHT MODE BUTTON VISIBILITY FIX
+   =============================== */
+
+/* All calculator buttons in light mode */
+body:not(.dark-mode) .calc-btn,
+body:not(.dark-mode) button {
+  background-color: #f2f2f2;
+  color: #111 !important;
+  border: 1px solid #ddd;
+}
+
+/* Keypad buttons specifically */
+body:not(.dark-mode) .keypad button,
+body:not(.dark-mode) .scientific button,
+body:not(.dark-mode) .controls button {
+  background-color: #f2f2f2;
+  color: #111 !important;
+}
+
+/* Press / active state */
+body:not(.dark-mode) button:active {
+  background-color: #e0e0e0;
+  color: #000 !important;
+}
+
+/* Focus (mobile tap highlight) */
+body:not(.dark-mode) button:focus {
+  outline: none;
+  color: #000 !important;
+}
+
+/* Display screen */
+body:not(.dark-mode) #screen {
+  background-color: #eaeaea;
+  color: #000;
+  border: 1px solid #ccc;
+}
+
+/* Microphone button */
+body:not(.dark-mode) #micBtn {
+  background-color: #f2f2f2;
+  color: #111 !important;
+}
+
+/* Clear button */
+body:not(.dark-mode) #clearBtn {
+  background-color: #ff6b6b;
+  color: #fff !important;
 }
 
