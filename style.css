@@ -34,21 +34,67 @@ body {
 }
 
 /* HEADER */
-header {
+.app-header {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-header h1 {
-  font-size: 1.5rem;
+/* TITLE */
+.app-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.6rem;
   font-weight: 500;
+  animation: titleEnter 600ms cubic-bezier(.2,0,0,1);
 }
 
-header p {
+/* ICON */
+.mic-icon {
+  display: inline-block;
+  animation: micFloat 2.5s ease-in-out infinite;
+}
+
+/* TEXT */
+.title-text {
+  letter-spacing: 0.2px;
+}
+
+/* SUBTITLE */
+.app-subtitle {
   font-size: 0.9rem;
   color: var(--outline);
+  margin-top: 4px;
+  animation: subtitleFade 800ms ease;
 }
 
+/* ANIMATIONS */
+@keyframes titleEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes subtitleFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes micFloat {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
 /* DISPLAY */
 .display input {
   width: 100%;
