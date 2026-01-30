@@ -394,22 +394,7 @@ body.dark-mode #screen {
   background-color: #2a2a2a;
   color: #fff;
 }
-/* ===============================
-   INSERTION POINT (CURSOR)
-   =============================== */
 
-#screen {
-  caret-color: #007aff;          /* Blue cursor color */
-  cursor: text;                   /* Show text cursor on hover */
-}
-
-body:not(.dark-mode) #screen {
-  caret-color: #007aff;          /* Blue cursor in light mode */
-}
-
-body.dark-mode #screen {
-  caret-color: #0a84ff;          /* Lighter blue cursor in dark mode */
-}
 /* ===============================
    MIC/SPEAK BUTTON FIX
    =============================== */
@@ -448,9 +433,25 @@ body:not(.dark-mode) #micBtn {
   50% { transform: scale(1.05); }
 }
 
+/* ===============================
+   INSERTION POINT (CURSOR)
+   =============================== */
+
+#screen {
+  caret-color: #007aff;          /* Blue cursor color */
+  cursor: text;                   /* Show text cursor on hover */
+}
+
+body:not(.dark-mode) #screen {
+  caret-color: #007aff;          /* Blue cursor in light mode */
+}
+
+body.dark-mode #screen {
+  caret-color: #0a84ff;          /* Lighter blue cursor in dark mode */
+}
+
 /* Make cursor blink smoothly */
 #screen:focus {
   outline: none;                  /* Remove default focus outline */
   caret-color: #007aff;
 }
-
