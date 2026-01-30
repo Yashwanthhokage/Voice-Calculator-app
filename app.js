@@ -1,19 +1,23 @@
+// ---------- HISTORY ----------
 const historyList = document.getElementById("historyList");
-const clearHistoryBtn = document.getElementById("clearHistory").addEventListener("click", () => {
-  historyList.innerHTML = "";
-  localStorage.removeItem("calcHistory");
-});
+const clearHistoryBtn = document.getElementById("clearHistory");
+
 clearHistoryBtn.addEventListener("click", () => {
   historyList.innerHTML = "";
+  localStorage.removeItem("calcHistory");
+  speak("History cleared");
+  beep(400);
 });
+
+// ---------- SCREEN & BUTTONS ----------
 const screen = document.getElementById("screen");
-const buttons = document.querySelectorAll(".calc-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    screen.value += btn.innerText;
-  });
-});
+const buttons = document.querySelectorAll(".calc-btn");
 const micBtn = document.getElementById("micBtn");
 const clearBtn = document.getElementById("clearBtn");
+
+buttons.forEach(btn => {
+  btn.addEventListener("click", () => handleInput(btn.textContent));
+});
 
 // --------- AUDIO ---------
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
