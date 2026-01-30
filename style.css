@@ -240,3 +240,38 @@ button:focus-visible {
   border-radius: 8px;
   background-color: var(--bg-color);
 }
+/* ===============================
+   LIGHT MODE BUTTON VISIBILITY FIX
+   =============================== */
+
+body.light button {
+  color: #111 !important;          /* Force dark text */
+}
+
+/* Calculator keypad buttons */
+body.light .keypad button,
+body.light .scientific button,
+body.light .controls button {
+  background-color: #f2f2f2;
+  color: #111;
+}
+
+/* Press / active state */
+body.light .keypad button:active,
+body.light .scientific button:active,
+body.light .controls button:active {
+  background-color: #e0e0e0;
+  color: #000;
+}
+
+/* Focus (mobile tap highlight) */
+body.light button:focus {
+  outline: none;
+  color: #000;
+}
+
+/* Display screen */
+body.light #screen {
+  background-color: #eaeaea;
+  color: #000;
+}
