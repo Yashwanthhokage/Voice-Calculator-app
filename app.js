@@ -170,13 +170,12 @@ function calculateFromVoiceAI(text) {
     const numbers = {
       zero: 0, one: 1, two: 2, three: 3, four: 4,
       five: 5, six: 6, seven: 7, eight: 8, nine: 9,
-      ten: 10
+      ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14,
+      fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+      twenty: 20, thirty: 30, forty: 40, fifty: 50,
+      sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+      hundred: 100, thousand: 1000
     };
-
-    Object.keys(numbers).forEach(word => {
-      const re = new RegExp("\\b" + word + "\\b", "g");
-      expr = expr.replace(re, numbers[word]);
-    });
 
     // ---------- NORMALIZE COMMON MISHEARS ----------
     expr = expr
@@ -186,7 +185,7 @@ function calculateFromVoiceAI(text) {
       .replace(/\bsquare root of\b/g, "root")
       .replace(/\bsquare root\b/g, "root");
 
-    // ---------- OPERATORS ----------
+    // ---------- OPERATORS (DO THIS BEFORE NUMBER CONVERSION) ----------
     expr = expr
       .replace(/\bplus\b/g, "+")
       .replace(/\bminus\b/g, "-")
@@ -197,10 +196,16 @@ function calculateFromVoiceAI(text) {
 
     // ---------- SMART PHRASES ----------
     expr = expr
-      .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
-      .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
-      .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
-      .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
+      .replace(/\badd (\w+) and (\w+)\b/g, "$1+$2")
+      .replace(/\bsubtract (\w+) from (\w+)\b/g, "$2-$1")
+      .replace(/\bmultiply (\w+) and (\w+)\b/g, "$1*$2")
+      .replace(/\bdivide (\w+) by (\w+)\b/g, "$1/$2");
+
+    // ---------- CONVERT NUMBER WORDS TO DIGITS ----------
+    Object.keys(numbers).forEach(word => {
+      const re = new RegExp("\\b" + word + "\\b", "g");
+      expr = expr.replace(re, numbers[word]);
+    });
 
     // ---------- HANDLE √ EXPRESSIONS ----------
     expr = expr.replace(/\s*√\s*/g, "√");
@@ -241,8 +246,7 @@ function calculateFromVoiceAI(text) {
     speak("Sorry, I couldn't understand");
     beep(200);
   }
-}
-
+    }
 // --------- HISTORY ---------
 function addToHistory(expression, result) {
   const li = document.createElement("li");
