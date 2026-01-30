@@ -1,10 +1,17 @@
 const historyList = document.getElementById("historyList");
-const clearHistoryBtn = document.getElementById("clearHistory");
+const clearHistoryBtn = document.getElementById("clearHistory").addEventListener("click", () => {
+  historyList.innerHTML = "";
+  localStorage.removeItem("calcHistory");
+});
 clearHistoryBtn.addEventListener("click", () => {
   historyList.innerHTML = "";
 });
 const screen = document.getElementById("screen");
-const buttons = document.querySelectorAll("button");
+const buttons = document.querySelectorAll(".calc-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    screen.value += btn.innerText;
+  });
+});
 const micBtn = document.getElementById("micBtn");
 const clearBtn = document.getElementById("clearBtn");
 
