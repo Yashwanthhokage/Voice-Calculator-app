@@ -155,7 +155,6 @@ recognition.onresult = function(event) {
   
   const transcript = event.results[0][0].transcript;
   micBtn.classList.remove("listening");
-  alert("VOICE HEARD: " + transcript);
   calculateFromVoiceAI(transcript);
   
   // ✅ Unlock after 1 second
