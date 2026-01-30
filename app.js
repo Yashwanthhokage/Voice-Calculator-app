@@ -78,9 +78,9 @@ function calculate() {
 
     if (isNaN(result)) throw "NaN";
 
-    screen.value = result;
-    speak(`Result is ${result}`);
-    beep();
+    const rounded = Number(result.toFixed(2));
+screen.value = rounded;
+speak(`Result is ${rounded}`);
   } catch {
     screen.value = "Error";
     speak("Invalid scientific expression");
@@ -258,9 +258,9 @@ function calculateFromVoiceAI(text) {
     const result = eval(expr);
     if (isNaN(result)) throw "Invalid";
 
-    screen.value = result;
-    speak(`The answer is ${result}`);
-    beep();
+    const rounded = Number(result.toFixed(2));
+screen.value = rounded;
+speak(`The answer is ${rounded}`);
 
   } catch (err) {
     console.error(err);
