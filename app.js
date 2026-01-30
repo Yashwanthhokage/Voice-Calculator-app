@@ -164,7 +164,7 @@ function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
 
-    console.log("VOICE INPUT:", expr);
+    console.log("🎤 VOICE INPUT:", expr);
 
     // ---------- NUMBER WORDS ----------
     const numbers = {
@@ -185,6 +185,8 @@ function calculateFromVoiceAI(text) {
       .replace(/\bsquare root of\b/g, "root")
       .replace(/\bsquare root\b/g, "root");
 
+    console.log("📝 After mishears:", expr);
+
     // ---------- OPERATORS (DO THIS BEFORE NUMBER CONVERSION) ----------
     expr = expr
       .replace(/\bplus\b/g, "+")
@@ -194,6 +196,8 @@ function calculateFromVoiceAI(text) {
       .replace(/\bpower|to the power of|raised\b/g, "**")
       .replace(/\bequals|equal to\b/g, "");
 
+    console.log("➕ After operators:", expr);
+
     // ---------- SMART PHRASES ----------
     expr = expr
       .replace(/\badd (\w+) and (\w+)\b/g, "$1+$2")
@@ -201,11 +205,15 @@ function calculateFromVoiceAI(text) {
       .replace(/\bmultiply (\w+) and (\w+)\b/g, "$1*$2")
       .replace(/\bdivide (\w+) by (\w+)\b/g, "$1/$2");
 
+    console.log("🔄 After phrases:", expr);
+
     // ---------- CONVERT NUMBER WORDS TO DIGITS ----------
     Object.keys(numbers).forEach(word => {
       const re = new RegExp("\\b" + word + "\\b", "g");
       expr = expr.replace(re, numbers[word]);
     });
+
+    console.log("🔢 After number conversion:", expr);
 
     // ---------- HANDLE √ EXPRESSIONS ----------
     expr = expr.replace(/\s*√\s*/g, "√");
@@ -228,13 +236,17 @@ function calculateFromVoiceAI(text) {
     // ---------- CLEAN SPACES ----------
     expr = expr.replace(/\s+/g, "");
 
-    console.log("NORMALIZED:", expr);
+    console.log("✅ FINAL EXPRESSION:", expr);
 
     // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
 
+    console.log("🔐 After auto-close:", expr);
+
     // ---------- EVALUATE ----------
     const result = eval(expr);
+    console.log("💡 RESULT:", result);
+    
     if (isNaN(result)) throw "Invalid";
 
     const rounded = Number(result.toFixed(2));
@@ -242,10 +254,11 @@ function calculateFromVoiceAI(text) {
     addToHistory(expr, rounded);
     speak(`The answer is ${rounded}`);
   } catch (err) {
-    console.error(err);
+    console.error("❌ ERROR:", err);
     speak("Sorry, I couldn't understand");
     beep(200);
   }
+}
     }
 // --------- HISTORY ---------
 function addToHistory(expression, result) {
