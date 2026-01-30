@@ -10,6 +10,7 @@ themeToggle.addEventListener("click", () => {
     speak("Light mode activated");
   }
 });
+
 // ---------- HISTORY ----------
 const historyList = document.getElementById("historyList");
 const clearHistoryBtn = document.getElementById("clearHistory");
@@ -26,15 +27,11 @@ const screen = document.getElementById("screen");
 const buttons = document.querySelectorAll(".calc-btn");
 const micBtn = document.getElementById("micBtn");
 const clearBtn = document.getElementById("clearBtn");
-clearBtn.addEventListener("click", () => {
-  screen.value = "";    // Clear the display
-  beep(400);            // Feedback sound
-});
 
-// ❌ REMOVED DUPLICATE - This was causing double input
-// buttons.forEach(btn => {
-//   btn.addEventListener("click", () => handleInput(btn.textContent));
-// });
+clearBtn.addEventListener("click", () => {
+  screen.value = "";
+  beep(400);
+});
 
 // --------- AUDIO ---------
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -55,18 +52,27 @@ function speak(text) {
   speechSynthesis.speak(utter);
 }
 
+// --------- HELPER FUNCTIONS ---------
+function degToRad(deg) {
+  return deg * Math.PI / 180;
+}
+
+function autoCloseBrackets(expr) {
+  const open = (expr.match(/\(/g) || []).length;
+  const close = (expr.match(/\)/g) || []).length;
+  return expr + ")".repeat(open - close);
+}
+
 // --------- CALCULATOR ---------
-// ✅ KEEP ONLY ONE EVENT LISTENER
 buttons.forEach(btn => {
   btn.addEventListener("click", () => handleInput(btn.textContent));
 });
 
 function handleInput(value) {
   switch (value) {
-
     case "C":
       screen.value = "";
-      beep(400); // Added feedback sound
+      beep(400);
       return;
 
     case "=":
@@ -140,33 +146,21 @@ micBtn.addEventListener("click", () => {
 
 recognition.onresult = function(event) {
   const transcript = event.results[0][0].transcript;
-  calculateFromVoiceAI(transcript); // ✅ new AI parser
+  micBtn.classList.remove("listening"); // ✅ FIXED: Remove listening state
+  calculateFromVoiceAI(transcript);
 };
-recognition.onerror = () => {
+
+recognition.onend = function() {
+  micBtn.classList.remove("listening"); // ✅ FIXED: Remove listening state when done
+};
+
+recognition.onerror = function() {
   micBtn.classList.remove("listening");
   speak("Voice error");
 };
-function degToRad(deg) {
-  return deg * Math.PI / 180;
-}
-function autoCloseBrackets(expr) {
-  const open = (expr.match(/\(/g) || []).length;
-  const close = (expr.match(/\)/g) || []).length;
-  return expr + ")".repeat(open - close);
-}
-  function calculateFromVoiceAI(text) {
-  try {
-    let raw = text.trim();
 
-    // DIRECT MATH (1+1, 2*3, etc.)
-    if (/^[0-9+\-*/().\s]+$/.test(raw)) {
-      const result = eval(raw);
-      const rounded = Number(result.toFixed(2));
-      screen.value = rounded;
-      addToHistory(raw, rounded);
-      speak(`The answer is ${rounded}`);
-      return;
-    }
+// --------- VOICE COMMAND PARSER ---------
+function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
 
@@ -174,9 +168,9 @@ function autoCloseBrackets(expr) {
 
     // ---------- NUMBER WORDS ----------
     const numbers = {
-      zero:0, one:1, two:2, three:3, four:4,
-      five:5, six:6, seven:7, eight:8, nine:9,
-      ten:10
+      zero: 0, one: 1, two: 2, three: 3, four: 4,
+      five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+      ten: 10
     };
 
     Object.keys(numbers).forEach(word => {
@@ -184,32 +178,6 @@ function autoCloseBrackets(expr) {
       expr = expr.replace(re, numbers[word]);
     });
 
-    // ---------- BASIC OPERATORS ----------
-    expr = expr
-      .replace(/\bplus\b/g, "+")
-      .replace(/\bminus\b/g, "-")
-      .replace(/\btimes|multiply|into\b/g, "*")
-      .replace(/\bdivide|divided by\b/g, "/")
-      .replace(/\bequals|equal to\b/g, "");
-
-    // ---------- CLEAN ----------
-    expr = expr.replace(/\s+/g, "");
-
-    console.log("NORMALIZED:", expr);
-
-    // ---------- DIRECT EVAL ----------
-    if (/^[0-9+\-*/().]+$/.test(expr)) {
-      const result = eval(expr);
-      if (!isNaN(result)) {
-        const rounded = Number(result.toFixed(2));
-        screen.value = rounded;
-        addToHistory(expr, rounded);
-        speak(`The answer is ${rounded}`);
-        return;
-      }
-    }
-
-    throw "Not basic math";
     // ---------- NORMALIZE COMMON MISHEARS ----------
     expr = expr
       .replace(/\bcause\b/g, "cos")
@@ -224,19 +192,22 @@ function autoCloseBrackets(expr) {
       .replace(/\bminus\b/g, "-")
       .replace(/\btimes|multiply|multiplied by|into\b/g, "*")
       .replace(/\bdivide|divided by|over\b/g, "/")
-      .replace(/\bpower|to the power of|raised\b/g, "**");
+      .replace(/\bpower|to the power of|raised\b/g, "**")
+      .replace(/\bequals|equal to\b/g, "");
 
-    // ---------- HANDLE SHORTHAND √ EXPRESSIONS ----------
-    // remove spaces in cases like "5 √ 5" -> "5√5"
+    // ---------- SMART PHRASES ----------
+    expr = expr
+      .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
+      .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
+      .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
+      .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
+
+    // ---------- HANDLE √ EXPRESSIONS ----------
     expr = expr.replace(/\s*√\s*/g, "√");
-
-    // 5√5 -> 5*Math.sqrt(5), √16 -> Math.sqrt(16)
     expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
       if (num1) return `${num1}*Math.sqrt(${num2})`;
       return `Math.sqrt(${num2})`;
     });
-
-    // root 25 -> Math.sqrt(25)
     expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
 
     // ---------- SCIENTIFIC FUNCTIONS ----------
@@ -247,18 +218,12 @@ function autoCloseBrackets(expr) {
       .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
       .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
       .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
-      .replace(/\bpi\b/g, "Math.PI")
-   expr = expr.replace(/\bpi\b/g, "Math.PI");
-
-    // ---------- SMART PHRASES ----------
-    expr = expr
-      .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
-      .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
-      .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
-      .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
+      .replace(/\bpi\b/g, "Math.PI");
 
     // ---------- CLEAN SPACES ----------
     expr = expr.replace(/\s+/g, "");
+
+    console.log("NORMALIZED:", expr);
 
     // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
@@ -277,6 +242,8 @@ function autoCloseBrackets(expr) {
     beep(200);
   }
 }
+
+// --------- HISTORY ---------
 function addToHistory(expression, result) {
   const li = document.createElement("li");
   li.textContent = `${expression} = ${result}`;
@@ -286,4 +253,4 @@ function addToHistory(expression, result) {
   if (historyList.children.length > 10) {
     historyList.removeChild(historyList.lastChild);
   }
-  }
+}
