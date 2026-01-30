@@ -158,13 +158,22 @@ recognition.onerror = function() {
   micBtn.classList.remove("listening");
   speak("Voice error");
 };
-
 // --------- VOICE COMMAND PARSER ---------
 function calculateFromVoiceAI(text) {
+  const debugLog = document.getElementById("debugLog");
+  
+  function log(msg) {
+    console.log(msg);
+    debugLog.innerHTML += msg + "<br>";
+    debugLog.scrollTop = debugLog.scrollHeight;
+  }
+  
+  debugLog.innerHTML = ""; // Clear previous logs
+  
   try {
     let expr = text.toLowerCase().trim();
 
-    console.log("🎤 VOICE INPUT:", expr);
+    log("🎤 INPUT: " + expr);
 
     // ---------- NUMBER WORDS ----------
     const numbers = {
@@ -177,17 +186,7 @@ function calculateFromVoiceAI(text) {
       hundred: 100, thousand: 1000
     };
 
-    // ---------- NORMALIZE COMMON MISHEARS ----------
-    expr = expr
-      .replace(/\bcause\b/g, "cos")
-      .replace(/\bcourse\b/g, "cos")
-      .replace(/\broute\b/g, "root")
-      .replace(/\bsquare root of\b/g, "root")
-      .replace(/\bsquare root\b/g, "root");
-
-    console.log("📝 After mishears:", expr);
-
-    // ---------- OPERATORS (DO THIS BEFORE NUMBER CONVERSION) ----------
+    // ---------- OPERATORS ----------
     expr = expr
       .replace(/\bplus\b/g, "+")
       .replace(/\bminus\b/g, "-")
@@ -196,56 +195,27 @@ function calculateFromVoiceAI(text) {
       .replace(/\bpower|to the power of|raised\b/g, "**")
       .replace(/\bequals|equal to\b/g, "");
 
-    console.log("➕ After operators:", expr);
+    log("➕ After ops: " + expr);
 
-    // ---------- SMART PHRASES ----------
-    expr = expr
-      .replace(/\badd (\w+) and (\w+)\b/g, "$1+$2")
-      .replace(/\bsubtract (\w+) from (\w+)\b/g, "$2-$1")
-      .replace(/\bmultiply (\w+) and (\w+)\b/g, "$1*$2")
-      .replace(/\bdivide (\w+) by (\w+)\b/g, "$1/$2");
-
-    console.log("🔄 After phrases:", expr);
-
-    // ---------- CONVERT NUMBER WORDS TO DIGITS ----------
+    // ---------- CONVERT NUMBER WORDS ----------
     Object.keys(numbers).forEach(word => {
       const re = new RegExp("\\b" + word + "\\b", "g");
       expr = expr.replace(re, numbers[word]);
     });
 
-    console.log("🔢 After number conversion:", expr);
-
-    // ---------- HANDLE √ EXPRESSIONS ----------
-    expr = expr.replace(/\s*√\s*/g, "√");
-    expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
-      if (num1) return `${num1}*Math.sqrt(${num2})`;
-      return `Math.sqrt(${num2})`;
-    });
-    expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
-
-    // ---------- SCIENTIFIC FUNCTIONS ----------
-    expr = expr
-      .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
-      .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
-      .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
-      .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
-      .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
-      .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
-      .replace(/\bpi\b/g, "Math.PI");
+    log("🔢 After nums: " + expr);
 
     // ---------- CLEAN SPACES ----------
     expr = expr.replace(/\s+/g, "");
 
-    console.log("✅ FINAL EXPRESSION:", expr);
+    log("✅ FINAL: " + expr);
 
     // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
 
-    console.log("🔐 After auto-close:", expr);
-
     // ---------- EVALUATE ----------
     const result = eval(expr);
-    console.log("💡 RESULT:", result);
+    log("💡 RESULT: " + result);
     
     if (isNaN(result)) throw "Invalid";
 
@@ -254,12 +224,11 @@ function calculateFromVoiceAI(text) {
     addToHistory(expr, rounded);
     speak(`The answer is ${rounded}`);
   } catch (err) {
-    console.error("❌ ERROR:", err);
+    log("❌ ERROR: " + err);
     speak("Sorry, I couldn't understand");
     beep(200);
   }
 }
-    }
 // --------- HISTORY ---------
 function addToHistory(expression, result) {
   const li = document.createElement("li");
