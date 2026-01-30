@@ -102,10 +102,9 @@ micBtn.addEventListener("click", () => {
   beep(900);
 });
 
-recognition.onresult = function (event) {
+recognition.onresult = function(event) {
   const transcript = event.results[0][0].transcript;
-  alert("VOICE HEARD: " + transcript);
-  calculateFromVoice(transcript); // ✅ ONLY THIS
+  calculateFromVoiceAI(transcript); // ✅ new AI parser
 };
 recognition.onerror = () => {
   micBtn.classList.remove("listening");
@@ -194,37 +193,57 @@ function autoCloseBrackets(expr) {
   const close = (expr.match(/\)/g) || []).length;
   return expr + ")".repeat(open - close);
 }
-function calculateFromVoice(text) {
+function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
 
-    // √ handling
-    expr = expr.replace(/v\s*(\d+)/g, "Math.sqrt($1)");
-    expr = expr.replace(/(\d)(Math\.sqrt)/g, "$1*$2");
-
-    // word replacements
+    // ---------- PHRASE NORMALIZATION ----------
+    // Common misheard words
     expr = expr
-      .replace(/plus/g, "+")
-      .replace(/minus/g, "-")
-      .replace(/times|multiply|multiplied by/g, "*")
-      .replace(/divide|divided by|over/g, "/")
-      .replace(/power|to the power of/g, "**")
-      .replace(/log/g, "Math.log10")
-      .replace(/ln/g, "Math.log")
-      .replace(/sin/g, "Math.sin")
-      .replace(/cos/g, "Math.cos")
-      .replace(/tan/g, "Math.tan")
-      .replace(/pi/g, "Math.PI")
-      .replace(/e/g, "Math.E")
-      .replace(/what is|calculate|equals|equal to|find/g, "");
+      .replace(/\bcause\b/g, "cos")
+      .replace(/\bcourse\b/g, "cos")
+      .replace(/\broute\b/g, "root")
+      .replace(/\bsquare root of\b/g, "root")
+      .replace(/\bsquare root\b/g, "root")
+      .replace(/\bplus\b/g, "+")
+      .replace(/\bminus\b/g, "-")
+      .replace(/\btimes|multiply|multiplied by\b/g, "*")
+      .replace(/\bdivide|divided by|over\b/g, "/")
+      .replace(/\bpower|to the power of\b/g, "**")
+      .replace(/\bwhat is|calculate|equals|equal to|find\b/g, "");
 
+    // ---------- ROOT HANDLING ----------
+    // root 25 -> Math.sqrt(25)
+    expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
+
+    // ---------- TRIG AND LOG ----------
+    expr = expr
+      .replace(/sin\s*(\d+(\.\d+)?)/g, "Math.sin(toRadians($1))")
+      .replace(/cos\s*(\d+(\.\d+)?)/g, "Math.cos(toRadians($1))")
+      .replace(/tan\s*(\d+(\.\d+)?)/g, "Math.tan(toRadians($1))")
+      .replace(/log\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
+      .replace(/ln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
+      .replace(/\bpi\b/g, "Math.PI")
+      .replace(/\be\b/g, "Math.E");
+
+    // ---------- SMART AI-PARSE ----------
+
+    // Handle phrases like "add 2 and 3" → "2+3"
+    expr = expr
+      .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
+      .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
+      .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
+      .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
+
+    // ---------- EVALUATE ----------
     const result = Function(`return ${expr}`)();
     if (isNaN(result)) throw "Invalid";
 
     display.value = result;
     speak(`The answer is ${result}`);
 
-  } catch {
-    speak("Sorry I couldn't understand");
+  } catch (e) {
+    console.error(e);
+    speak("Sorry, I couldn't understand");
   }
 }
