@@ -102,12 +102,14 @@ micBtn.addEventListener("click", () => {
   beep(900);
 });
 
-recognition.onresult = e => {
-  const speech = e.results[0][0].transcript.toLowerCase();
-  micBtn.classList.remove("listening");
-  parseVoice(speech);
-};
+recognition.onresult = function (event) {
+  const transcript = event.results[0][0].transcript;
 
+  alert("VOICE HEARD: " + transcript);   // 🔴 IMPORTANT
+  console.log("VOICE HEARD:", transcript);
+
+  parseVoice(transcript);
+};
 recognition.onerror = () => {
   micBtn.classList.remove("listening");
   speak("Voice error");
