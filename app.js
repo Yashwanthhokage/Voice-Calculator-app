@@ -1,3 +1,8 @@
+const historyList = document.getElementById("historyList");
+const clearHistoryBtn = document.getElementById("clearHistory");
+clearHistoryBtn.addEventListener("click", () => {
+  historyList.innerHTML = "";
+});
 const screen = document.getElementById("screen");
 const buttons = document.querySelectorAll("button");
 const micBtn = document.getElementById("micBtn");
@@ -80,6 +85,7 @@ function calculate() {
 
     const rounded = Number(result.toFixed(2));
 screen.value = rounded;
+addToHistory(expression, rounded);
 speak(`Result is ${rounded}`);
   } catch {
     screen.value = "Error";
@@ -260,11 +266,21 @@ function calculateFromVoiceAI(text) {
 
     const rounded = Number(result.toFixed(2));
 screen.value = rounded;
+addToHistory(expr, rounded);
 speak(`The answer is ${rounded}`);
-
   } catch (err) {
     console.error(err);
     speak("Sorry, I couldn't understand");
     beep(200);
+  }
+}
+function addToHistory(expression, result) {
+  const li = document.createElement("li");
+  li.textContent = `${expression} = ${result}`;
+  historyList.prepend(li);
+
+  // Limit history to last 10 entries
+  if (historyList.children.length > 10) {
+    historyList.removeChild(historyList.lastChild);
   }
 }
