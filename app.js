@@ -186,6 +186,21 @@ function calculateFromVoiceAI(text) {
     // ---------- REMOVE UNNECESSARY PHRASES ----------
     expr = expr.replace(/\b(what is|calculate|equals|equal to|find|please)\b/g, "");
 
+    // ---------- NUMBER WORDS ----------
+    const numbers = {
+      zero:0, one:1, two:2, three:3, four:4,
+      five:5, six:6, seven:7, eight:8, nine:9,
+      ten:10, eleven:11, twelve:12, thirteen:13,
+      fourteen:14, fifteen:15, sixteen:16, seventeen:17,
+      eighteen:18, nineteen:19, twenty:20, thirty:30,
+      forty:40, fifty:50, sixty:60, seventy:70,
+      eighty:80, ninety:90
+    };
+    Object.keys(numbers).forEach(word => {
+      const re = new RegExp("\\b" + word + "\\b", "gi");
+      expr = expr.replace(re, numbers[word]);
+    });
+
     // ---------- NORMALIZE COMMON MISHEARS ----------
     expr = expr
       .replace(/\bcause\b/g, "cos")
@@ -193,21 +208,6 @@ function calculateFromVoiceAI(text) {
       .replace(/\broute\b/g, "root")
       .replace(/\bsquare root of\b/g, "root")
       .replace(/\bsquare root\b/g, "root");
-
-    // ---------- NUMBER WORDS ----------
-    const numbers = {
-      zero:0, one:1, two:2, three:3, four:4,
-      five:5, six:6, seven:7, eight:8, nine:9,
-      ten:10, eleven:11, twelve:12, thirteen:13,
-      fourteen:14, fifteen:15, sixteen:16, seventeen:17,
-      eighteen:18, nineteen:19, twenty:20,
-      thirty:30, forty:40, fifty:50, sixty:60,
-      seventy:70, eighty:80, ninety:90
-    };
-    Object.keys(numbers).forEach(word => {
-      const re = new RegExp("\\b" + word + "\\b", "gi");
-      expr = expr.replace(re, numbers[word]);
-    });
 
     // ---------- OPERATORS ----------
     expr = expr
@@ -218,6 +218,9 @@ function calculateFromVoiceAI(text) {
       .replace(/\bpower|to the power of|raised\b/g, "**");
 
     // ---------- HANDLE SHORTHAND √ EXPRESSIONS ----------
+    // remove spaces in cases like "5 √ 5" -> "5√5"
+    expr = expr.replace(/\s*√\s*/g, "√");
+
     // 5√5 -> 5*Math.sqrt(5), √16 -> Math.sqrt(16)
     expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
       if (num1) return `${num1}*Math.sqrt(${num2})`;
@@ -244,6 +247,9 @@ function calculateFromVoiceAI(text) {
       .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
       .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
       .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
+
+    // ---------- CLEAN SPACES ----------
+    expr = expr.replace(/\s+/g, "");
 
     // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
