@@ -183,53 +183,74 @@ function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
 
-    // ---------- PHRASE NORMALIZATION ----------
-    // Common misheard words
+    // ---------- REMOVE UNNECESSARY PHRASES ----------
+    expr = expr.replace(/\b(what is|calculate|equals|equal to|find|please)\b/g, "");
+
+    // ---------- NORMALIZE COMMON MISHEARS ----------
     expr = expr
       .replace(/\bcause\b/g, "cos")
       .replace(/\bcourse\b/g, "cos")
       .replace(/\broute\b/g, "root")
       .replace(/\bsquare root of\b/g, "root")
-      .replace(/\bsquare root\b/g, "root")
+      .replace(/\bsquare root\b/g, "root");
+
+    // ---------- NUMBER WORDS ----------
+    const numbers = {
+      zero: 0, one: 1, two: 2, three: 3, four: 4,
+      five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+      ten: 10, eleven: 11, twelve: 12, thirteen: 13,
+      fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17,
+      eighteen: 18, nineteen: 19, twenty: 20, thirty: 30,
+      forty: 40, fifty: 50, sixty: 60, seventy: 70,
+      eighty: 80, ninety: 90
+    };
+
+    Object.keys(numbers).forEach(word => {
+      const re = new RegExp("\\b" + word + "\\b", "gi");
+      expr = expr.replace(re, numbers[word]);
+    });
+
+    // ---------- OPERATORS ----------
+    expr = expr
       .replace(/\bplus\b/g, "+")
       .replace(/\bminus\b/g, "-")
       .replace(/\btimes|multiply|multiplied by\b/g, "*")
       .replace(/\bdivide|divided by|over\b/g, "/")
-      .replace(/\bpower|to the power of\b/g, "**")
-      .replace(/\bwhat is|calculate|equals|equal to|find\b/g, "");
+      .replace(/\bpower|to the power of\b/g, "**");
 
-    // ---------- ROOT HANDLING ----------
-    // root 25 -> Math.sqrt(25)
-    expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
-
-    // ---------- TRIG AND LOG ----------
+    // ---------- SCIENTIFIC FUNCTIONS ----------
     expr = expr
-      .replace(/sin\s*(\d+(\.\d+)?)/g, "Math.sin(toRadians($1))")
-      .replace(/cos\s*(\d+(\.\d+)?)/g, "Math.cos(toRadians($1))")
-      .replace(/tan\s*(\d+(\.\d+)?)/g, "Math.tan(toRadians($1))")
-      .replace(/log\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
-      .replace(/ln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
+      .replace(/\broot\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)")
+      .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
+      .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
+      .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
+      .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
+      .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
       .replace(/\bpi\b/g, "Math.PI")
       .replace(/\be\b/g, "Math.E");
 
-    // ---------- SMART AI-PARSE ----------
-
-    // Handle phrases like "add 2 and 3" → "2+3"
+    // ---------- SMART PHRASES ----------
+    // "add 2 and 3" -> "2+3", etc.
     expr = expr
       .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
       .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
       .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
       .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
 
+    // ---------- AUTO-CLOSE BRACKETS ----------
+    expr = autoCloseBrackets(expr);
+
     // ---------- EVALUATE ----------
-    const result = Function(`return ${expr}`)();
+    const result = eval(expr);
     if (isNaN(result)) throw "Invalid";
 
-    display.value = result;
+    screen.value = result;
     speak(`The answer is ${result}`);
+    beep();
 
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
     speak("Sorry, I couldn't understand");
+    beep(200);
   }
 }
