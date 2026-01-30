@@ -115,18 +115,52 @@ recognition.onerror = () => {
 
 function parseVoice(text) {
   try {
-    let expr = text
+    let expr = text.toLowerCase();
+
+    // -------- NUMBER WORDS --------
+    const numbers = {
+      zero: 0, one: 1, two: 2, three: 3, four: 4,
+      five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+      ten: 10
+    };
+
+    Object.keys(numbers).forEach(word => {
+      expr = expr.replaceAll(word, numbers[word]);
+    });
+
+    // -------- OPERATORS --------
+    expr = expr
       .replace(/plus/g, "+")
       .replace(/minus/g, "-")
-      .replace(/times|multiply/g, "*")
-      .replace(/divide|by/g, "/")
-      .replace(/power/g, "**")
-      .replace(/square root of/g, "Math.sqrt");
+      .replace(/times|multiply|into/g, "*")
+      .replace(/divide|divided by|by/g, "/")
+      .replace(/power|raised to/g, "**");
 
-    screen.value = eval(expr);
-    speak(`Result is ${screen.value}`);
+    // -------- SCIENTIFIC --------
+    expr = expr
+      .replace(/square root of|square root|root/g, "Math.sqrt(")
+      .replace(/logarithm of|log of|log/g, "Math.log10(")
+      .replace(/exponential of|exp of|exp/g, "Math.exp(")
+      .replace(/sine of|sin of|sin/g, "Math.sin(degToRad(")
+      .replace(/cosine of|cos of|cos/g, "Math.cos(degToRad(")
+      .replace(/tangent of|tan of|tan/g, "Math.tan(degToRad(");
+
+    // -------- CLEANUP --------
+    expr = expr.replace(/\s+/g, "");
+
+    expr = autoCloseBrackets(expr);
+
+    const result = eval(expr);
+
+    if (isNaN(result)) throw "NaN";
+
+    screen.value = result;
+    speak(`Result is ${result}`);
+    beep();
+
   } catch {
     speak("Sorry, I couldn't understand");
+    beep(200);
   }
 }
 function degToRad(deg) {
