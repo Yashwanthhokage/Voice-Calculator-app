@@ -234,24 +234,46 @@ function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
 
-    // ---------- REMOVE UNNECESSARY PHRASES ----------
-    expr = expr.replace(/\b(what is|calculate|equals|equal to|find|please)\b/g, "");
+    console.log("VOICE INPUT:", expr);
 
     // ---------- NUMBER WORDS ----------
     const numbers = {
       zero:0, one:1, two:2, three:3, four:4,
       five:5, six:6, seven:7, eight:8, nine:9,
-      ten:10, eleven:11, twelve:12, thirteen:13,
-      fourteen:14, fifteen:15, sixteen:16, seventeen:17,
-      eighteen:18, nineteen:19, twenty:20, thirty:30,
-      forty:40, fifty:50, sixty:60, seventy:70,
-      eighty:80, ninety:90
+      ten:10
     };
+
     Object.keys(numbers).forEach(word => {
-      const re = new RegExp("\\b" + word + "\\b", "gi");
+      const re = new RegExp("\\b" + word + "\\b", "g");
       expr = expr.replace(re, numbers[word]);
     });
 
+    // ---------- BASIC OPERATORS ----------
+    expr = expr
+      .replace(/\bplus\b/g, "+")
+      .replace(/\bminus\b/g, "-")
+      .replace(/\btimes|multiply|into\b/g, "*")
+      .replace(/\bdivide|divided by\b/g, "/")
+      .replace(/\bequals|equal to\b/g, "");
+
+    // ---------- CLEAN ----------
+    expr = expr.replace(/\s+/g, "");
+
+    console.log("NORMALIZED:", expr);
+
+    // ---------- DIRECT EVAL ----------
+    if (/^[0-9+\-*/().]+$/.test(expr)) {
+      const result = eval(expr);
+      if (!isNaN(result)) {
+        const rounded = Number(result.toFixed(2));
+        screen.value = rounded;
+        addToHistory(expr, rounded);
+        speak(`The answer is ${rounded}`);
+        return;
+      }
+    }
+
+    throw "Not basic math";
     // ---------- NORMALIZE COMMON MISHEARS ----------
     expr = expr
       .replace(/\bcause\b/g, "cos")
