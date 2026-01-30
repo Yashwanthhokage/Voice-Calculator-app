@@ -14,6 +14,10 @@ const screen = document.getElementById("screen");
 const buttons = document.querySelectorAll(".calc-btn");
 const micBtn = document.getElementById("micBtn");
 const clearBtn = document.getElementById("clearBtn");
+clearBtn.addEventListener("click", () => {
+  screen.value = "";    // Clear the display
+  beep(400);            // Feedback sound
+});
 
 // ❌ REMOVED DUPLICATE - This was causing double input
 // buttons.forEach(btn => {
