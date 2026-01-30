@@ -104,11 +104,8 @@ micBtn.addEventListener("click", () => {
 
 recognition.onresult = function (event) {
   const transcript = event.results[0][0].transcript;
-
-  alert("VOICE HEARD: " + transcript);   // 🔴 IMPORTANT
-  console.log("VOICE HEARD:", transcript);
-
-  parseVoice(transcript);
+  alert("VOICE HEARD: " + transcript);
+  calculateFromVoice(transcript); // ✅ ONLY THIS
 };
 recognition.onerror = () => {
   micBtn.classList.remove("listening");
@@ -196,4 +193,38 @@ function autoCloseBrackets(expr) {
   const open = (expr.match(/\(/g) || []).length;
   const close = (expr.match(/\)/g) || []).length;
   return expr + ")".repeat(open - close);
+}
+function calculateFromVoice(text) {
+  try {
+    let expr = text.toLowerCase().trim();
+
+    // √ handling
+    expr = expr.replace(/v\s*(\d+)/g, "Math.sqrt($1)");
+    expr = expr.replace(/(\d)(Math\.sqrt)/g, "$1*$2");
+
+    // word replacements
+    expr = expr
+      .replace(/plus/g, "+")
+      .replace(/minus/g, "-")
+      .replace(/times|multiply|multiplied by/g, "*")
+      .replace(/divide|divided by|over/g, "/")
+      .replace(/power|to the power of/g, "**")
+      .replace(/log/g, "Math.log10")
+      .replace(/ln/g, "Math.log")
+      .replace(/sin/g, "Math.sin")
+      .replace(/cos/g, "Math.cos")
+      .replace(/tan/g, "Math.tan")
+      .replace(/pi/g, "Math.PI")
+      .replace(/e/g, "Math.E")
+      .replace(/what is|calculate|equals|equal to|find/g, "");
+
+    const result = Function(`return ${expr}`)();
+    if (isNaN(result)) throw "Invalid";
+
+    display.value = result;
+    speak(`The answer is ${result}`);
+
+  } catch {
+    speak("Sorry I couldn't understand");
+  }
 }
