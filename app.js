@@ -28,41 +28,64 @@ buttons.forEach(btn => {
 });
 
 function handleInput(value) {
-  if (value === "=") {
-    calculate();
-  } else if (value === "C") {
-    screen.value = "";
-  } else if (value === "√") {
-    screen.value = Math.sqrt(eval(screen.value));
-  } else if (value === "sin") {
-    screen.value = Math.sin(toRad(eval(screen.value)));
-  } else if (value === "cos") {
-    screen.value = Math.cos(toRad(eval(screen.value)));
-  } else if (value === "tan") {
-    screen.value = Math.tan(toRad(eval(screen.value)));
-  } else if (value === "log") {
-    screen.value = Math.log10(eval(screen.value));
-  } else if (value === "exp") {
-    screen.value = Math.exp(eval(screen.value));
-  } else {
-    screen.value += value;
+  switch (value) {
+
+    case "C":
+      screen.value = "";
+      return;
+
+    case "=":
+      calculate();
+      return;
+
+    case "sin":
+      screen.value += "Math.sin(degToRad(";
+      return;
+
+    case "cos":
+      screen.value += "Math.cos(degToRad(";
+      return;
+
+    case "tan":
+      screen.value += "Math.tan(degToRad(";
+      return;
+
+    case "log":
+      screen.value += "Math.log10(";
+      return;
+
+    case "√":
+      screen.value += "Math.sqrt(";
+      return;
+
+    case "exp":
+      screen.value += "Math.exp(";
+      return;
+
+    case "^":
+      screen.value += "**";
+      return;
+
+    default:
+      screen.value += value;
   }
 }
 
 function calculate() {
   try {
-    const result = eval(screen.value);
+    const expression = autoCloseBrackets(screen.value);
+    const result = eval(expression);
+
+    if (isNaN(result)) throw "NaN";
+
     screen.value = result;
     speak(`Result is ${result}`);
     beep();
   } catch {
-    speak("Invalid calculation");
+    screen.value = "Error";
+    speak("Invalid scientific expression");
     beep(200);
   }
-}
-
-function toRad(deg) {
-  return deg * (Math.PI / 180);
 }
 
 // --------- VOICE INPUT ---------
@@ -105,4 +128,12 @@ function parseVoice(text) {
   } catch {
     speak("Sorry, I couldn't understand");
   }
+}
+function degToRad(deg) {
+  return deg * Math.PI / 180;
+}
+function autoCloseBrackets(expr) {
+  const open = (expr.match(/\(/g) || []).length;
+  const close = (expr.match(/\)/g) || []).length;
+  return expr + ")".repeat(open - close);
 }
