@@ -1,4 +1,16 @@
-      // ---------- HISTORY ----------
+const themeToggle = document.getElementById("themeToggle");
+
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+
+  // Optional: Speak feedback
+  if (document.body.classList.contains("dark-mode")) {
+    speak("Dark mode activated");
+  } else {
+    speak("Light mode activated");
+  }
+});
+// ---------- HISTORY ----------
 const historyList = document.getElementById("historyList");
 const clearHistoryBtn = document.getElementById("clearHistory");
 
