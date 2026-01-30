@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VoiceCalci</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <h1>🎙 VoiceCalci</h1>
+      <p>Hands-Free Scientific Calculator</p>
+    </header>
+
+    <section class="display" aria-live="polite">
+      <input id="screen" type="text" aria-label="Calculator display" readonly>
+    </section>
+
+    <section class="controls">
+      <button id="micBtn" aria-label="Voice input">🎤</button>
+      <button id="clearBtn">C</button>
+    </section>
+
+    <section class="keypad">
+      <button>7</button><button>8</button><button>9</button><button>/</button>
+      <button>4</button><button>5</button><button>6</button><button>*</button>
+      <button>1</button><button>2</button><button>3</button><button>-</button>
+      <button>0</button><button>.</button><button>=</button><button>+</button>
+    </section>
+
+    <section class="scientific">
+      <button>sin</button>
+      <button>cos</button>
+      <button>tan</button>
+      <button>log</button>
+      <button>√</button>
+      <button>^</button>
+      <button>exp</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
