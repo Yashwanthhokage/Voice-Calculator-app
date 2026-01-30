@@ -120,6 +120,20 @@ function parseVoice(text) {
   try {
     let expr = text.toLowerCase();
 
+    /* ---------- HANDLE v AS √ ---------- */
+    // v2  -> Math.sqrt(2)
+    expr = expr.replace(/v(\d+)/g, "Math.sqrt($1)");
+
+    // 2v2 -> 2*Math.sqrt(2)
+    expr = expr.replace(/(\d+)math\.sqrt/g, "$1*Math.sqrt");
+
+    /* ---------- NORMALIZE SPEECH ---------- */
+    expr = expr
+      .replace(/route|root|roof|routh/g, "root")
+      .replace(/squire|square|squared/g, "square")
+      .replace(/of/g, "")
+      .replace(/what is|calculate|find/g, "");
+
     /* ---------- NORMALIZE COMMON MISHEARS ---------- */
     expr = expr
       .replace(/route|root|roof|routh/g, "root")
