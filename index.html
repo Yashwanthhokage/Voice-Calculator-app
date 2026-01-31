@@ -20,8 +20,8 @@
       <header class="app-header">
         <button id="themeToggle" aria-label="Toggle Dark/Light Mode">🌓</button>
 </header>
-
-    <section class="display" aria-live="polite">
+<div id="calculatorTab">
+ <section class="display" aria-live="polite">
       <input id="screen" type="text" aria-label="Calculator display" readonly>
     </section>
     <div class="history-container">
@@ -31,7 +31,46 @@
   </div>
   <ul id="historyList"></ul>
     </div>
-    <!-- CURRENCY CONVERTER SECTION -->
+    
+
+<div class="controls">
+  <button id="micBtn">🎤</button>
+  <button id="backspaceBtn">⌫</button>
+  <button id="clearBtn">C</button>
+</div>
+    <section class="keypad">
+  <button class="calc-btn">7</button>
+  <button class="calc-btn">8</button>
+  <button class="calc-btn">9</button>
+  <button class="calc-btn">/</button>
+
+  <button class="calc-btn">4</button>
+  <button class="calc-btn">5</button>
+  <button class="calc-btn">6</button>
+  <button class="calc-btn">*</button>
+
+  <button class="calc-btn">1</button>
+  <button class="calc-btn">2</button>
+  <button class="calc-btn">3</button>
+  <button class="calc-btn">-</button>
+
+  <button class="calc-btn">0</button>
+  <button class="calc-btn">.</button>
+  <button class="calc-btn">=</button>
+  <button class="calc-btn">+</button>
+    </section>
+
+    <section class="scientific">
+  <button class="calc-btn">sin</button>
+  <button class="calc-btn">cos</button>
+  <button class="calc-btn">tan</button>
+  <button class="calc-btn">log</button>
+  <button class="calc-btn">√</button>
+  <button class="calc-btn">^</button>
+  <button class="calc-btn">exp</button>
+    </section>
+<div id="converterTab" style="display:none;">
+<!-- CURRENCY CONVERTER SECTION -->
 <div class="currency-section">
   <h3 class="currency-title">💱 Currency Converter</h3>
   
@@ -87,43 +126,7 @@
   <!-- Rate Update Status -->
   <div id="rateStatus" class="rate-status">Loading exchange rates...</div>
 </div>
-
-<div class="controls">
-  <button id="micBtn">🎤</button>
-  <button id="backspaceBtn">⌫</button>
-  <button id="clearBtn">C</button>
 </div>
-    <section class="keypad">
-  <button class="calc-btn">7</button>
-  <button class="calc-btn">8</button>
-  <button class="calc-btn">9</button>
-  <button class="calc-btn">/</button>
-
-  <button class="calc-btn">4</button>
-  <button class="calc-btn">5</button>
-  <button class="calc-btn">6</button>
-  <button class="calc-btn">*</button>
-
-  <button class="calc-btn">1</button>
-  <button class="calc-btn">2</button>
-  <button class="calc-btn">3</button>
-  <button class="calc-btn">-</button>
-
-  <button class="calc-btn">0</button>
-  <button class="calc-btn">.</button>
-  <button class="calc-btn">=</button>
-  <button class="calc-btn">+</button>
-    </section>
-
-    <section class="scientific">
-  <button class="calc-btn">sin</button>
-  <button class="calc-btn">cos</button>
-  <button class="calc-btn">tan</button>
-  <button class="calc-btn">log</button>
-  <button class="calc-btn">√</button>
-  <button class="calc-btn">^</button>
-  <button class="calc-btn">exp</button>
-    </section>
 
   <script src="app.js"></script>
 </body>
