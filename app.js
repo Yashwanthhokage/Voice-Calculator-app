@@ -372,13 +372,15 @@ if (swapBtn) {
 function handleCurrencyConversion(text) {
   // More flexible patterns
   const patterns = [
-    // "100 dollars to rupees"
-    /(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into|2)\s+(\w+(?:\s+\w+)?)/i,
-    // "convert 100 dollars to rupees"
-    /convert\s+(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into|2)\s+(\w+(?:\s+\w+)?)/i,
-    // "100 USD to INR"
-    /(\d+(?:\.\d+)?)\s*([a-z]{3})\s+(?:to|in|into|2)\s+([a-z]{3})/i,
-  ];
+  // "100 dollars to rupees"
+  /(\d+(?:\.\d+)?)\s*(usd|inr|eur|gbp|jpy|cny|rupees?|dollars?|yen|yuan)\s+(?:to|in|into)\s+(usd|inr|eur|gbp|jpy|cny|rupees?|dollars?|yen|yuan)/i,
+
+  // "convert 100 dollars to rupees"
+  /convert\s+(\d+(?:\.\d+)?)\s*(usd|inr|eur|gbp|jpy|cny|rupees?|dollars?|yen|yuan)\s+(?:to|in|into)\s+(usd|inr|eur|gbp|jpy|cny|rupees?|dollars?|yen|yuan)/i,
+
+  // "100 USD to INR"
+  /(\d+(?:\.\d+)?)\s*([a-z]{3})\s+(?:to|in|into)\s+([a-z]{3})/i
+];
 
   console.log("Checking currency conversion for:", text);
 
@@ -485,27 +487,22 @@ function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
     console.log("VOICE INPUT:", expr);
-// ---------- SYMBOL & CURRENCY NORMALIZATION ----------
+// 🔥 FIRST: try currency conversion on RAW voice
+if (handleCurrencyConversion(expr)) {
+  return;
+}
+
+// THEN do math & symbol normalization
 expr = expr
   .replace(/\$/g, " usd ")
   .replace(/₹/g, " inr ")
   .replace(/€/, " eur ")
-  .replace(/£/, " gbp ");
-// ---------- CURRENCY NORMALIZATION ----------
-expr = expr
+  .replace(/£/, " gbp ")
   .replace(/\brupees?\b/g, "inr")
-  .replace(/\bindian rupees?\b/g, "inr")
   .replace(/\bdollars?\b/g, "usd")
-  .replace(/\bus dollars?\b/g, "usd")
   .replace(/\beuros?\b/g, "eur")
   .replace(/\bpounds?\b/g, "gbp")
-  .replace(/\byen\b/g, "jpy")
-  .replace(/\bto\b/g, " to ")
-  .replace(/\bin\b/g, " to ");
-
-    if (handleCurrencyConversion(expr)) {
-      return;
-    }
+  .replace(/\byen\b/g, "jpy");
 
     expr = expr
       .replace(/oneplus/g, "one plus")
