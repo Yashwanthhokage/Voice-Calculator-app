@@ -228,12 +228,14 @@ let lastRateUpdate = null;
 
 // Currency aliases for voice recognition
 const currencyAliases = {
-  dollar: 'USD', dollars: 'USD', usd: 'USD',
-  rupee: 'INR', rupees: 'INR', inr: 'INR',
-  rs: 'INR', 'rs.': 'INR',
-  euro: 'EUR', euros: 'EUR', eur: 'EUR',
-  pound: 'GBP', pounds: 'GBP', gbp: 'GBP',
-  yen: 'JPY', jpy: 'JPY'
+'dollar': 'USD', 'dollars': 'USD', 'usd': 'USD',
+'rupee': 'INR', 'rupees': 'INR', 'inr': 'INR', 'indian rupee': 'INR', 'indian rupees': 'INR',
+'euro': 'EUR', 'euros': 'EUR', 'eur': 'EUR',
+'pound': 'GBP', 'pounds': 'GBP', 'gbp': 'GBP', 'british pound': 'GBP',
+'yen': 'JPY', 'jpy': 'JPY', 'japanese yen': 'JPY',
+'australian dollar': 'AUD', 'aud': 'AUD',
+'canadian dollar': 'CAD', 'cad': 'CAD',
+'yuan': 'CNY', 'cny': 'CNY', 'chinese yuan': 'CNY',
 };
 
 // Get DOM elements
@@ -331,9 +333,9 @@ beep(600);
 function handleCurrencyConversion(text) {
 // Normalize currency symbols
 text = text.toLowerCase();
-text = text
-  .replace(/\$/g, " dollar ")
-  .replace(/₹|rs\.?|rupees?/g, " rupee ");
+text=text
+.replace(/$/g, " dollar ")
+.replace(/₹/g, " rupee ")
 .replace(/€/g, " euro ")
 .replace(/£/g, " pound ");
 const patterns = [
@@ -347,13 +349,14 @@ const amount = parseFloat(match[1]);
 let from = match[2].toLowerCase().trim();
 let to = match[3].toLowerCase().trim();
 
-from = currencyAliases[from]
-    || currencyAliases[from.replace(/s$/, "")]
-    || from.toUpperCase();
+from = currencyAliases[from]   
+|| currencyAliases[from.replace(/$s/, "")]  
+|| from.toUpperCase();
 
 to = currencyAliases[to]
-    || currencyAliases[to.replace(/s$/, "")]
-    || to.toUpperCase();
+|| currencyAliases[to.replace(/$s/, "")]
+|| to.toUpperCase();
+const result = convertCurrency(amount, from, to);
 
 if (result !== null) {  
     const rounded = result.toFixed(2);  
