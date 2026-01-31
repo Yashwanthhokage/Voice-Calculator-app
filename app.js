@@ -501,4 +501,4 @@ function addToHistory(expression, result) {
   if (historyList.children.length > 10) {
     historyList.removeChild(historyList.lastChild);
   }
-    }
+}
