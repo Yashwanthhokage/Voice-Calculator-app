@@ -423,28 +423,14 @@ recognition.onerror = function(event) {
 };
 // --------- VOICE COMMAND PARSER ---------
 function calculateFromVoiceAI(text) {
-   try {
-    let expr = text.toLowerCase().trim();
-    console.log("VOICE INPUT:", expr);
-
-    // ✅ CHECK FOR CURRENCY CONVERSION FIRST
-    if (handleCurrencyConversion(expr)) {
-      return; // Currency handled, exit
-    }
-
-    // ... rest of your existing code for calculator
-  } catch (err) {
-    console.error(err);
-    speak("Sorry, I couldn't understand");
-    beep(200);
-  }
-}
   try {
     let expr = text.toLowerCase().trim();
-
     console.log("VOICE INPUT:", expr);
 
-    // ✅ FIX: Handle concatenated words like "oneplus" → "one plus"
+    // ✅ Currency first
+    if (handleCurrencyConversion(expr)) return;
+
+    // Fix concatenated words
     expr = expr
       .replace(/oneplus/g, "one plus")
       .replace(/twoplus/g, "two plus")
@@ -457,23 +443,16 @@ function calculateFromVoiceAI(text) {
       .replace(/nineplus/g, "nine plus")
       .replace(/tenplus/g, "ten plus");
 
-    // ---------- NUMBER WORDS ----------
     const numbers = {
       zero: 0, one: 1, two: 2, three: 3, four: 4,
       five: 5, six: 6, seven: 7, eight: 8, nine: 9,
       ten: 10
     };
 
-    // ---------- NORMALIZE COMMON MISHEARS ----------
     expr = expr
-      .replace(/\bcause\b/g, "cos")
-      .replace(/\bcourse\b/g, "cos")
+      .replace(/\bcause\b|\bcourse\b/g, "cos")
       .replace(/\broute\b/g, "root")
-      .replace(/\bsquare root of\b/g, "root")
-      .replace(/\bsquare root\b/g, "root");
-
-    // ---------- OPERATORS ----------
-    expr = expr
+      .replace(/\bsquare root of\b|\bsquare root\b/g, "root")
       .replace(/\bplus\b/g, "+")
       .replace(/\bminus\b/g, "-")
       .replace(/\btimes|multiply|multiplied by|into\b/g, "*")
@@ -481,64 +460,23 @@ function calculateFromVoiceAI(text) {
       .replace(/\bpower|to the power of|raised\b/g, "**")
       .replace(/\bequals|equal to\b/g, "");
 
-    console.log("After operators:", expr);
-
-    // ✅ CONVERT NUMBER WORDS BEFORE SMART PHRASES
     Object.keys(numbers).forEach(word => {
-      const re = new RegExp("\\b" + word + "\\b", "g");
-      expr = expr.replace(re, numbers[word]);
+      expr = expr.replace(new RegExp("\\b" + word + "\\b", "g"), numbers[word]);
     });
 
-    console.log("After number conversion:", expr);
-
-    // ---------- SMART PHRASES ----------
     expr = expr
-      .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
-      .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
-      .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
-      .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
+      .replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)")
+      .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
+      .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
+      .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
+      .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
+      .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
+      .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
+      .replace(/\bpi\b/g, "Math.PI");
 
-    // ---------- HANDLE √ EXPRESSIONS ----------
-    expr = expr.replace(/\s*√\s*/g, "√");
-    expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
-      if (num1) return `${num1}*Math.sqrt(${num2})`;
-      return `Math.sqrt(${num2})`;
-    });
-    expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
-
-// ✅ SCIENTIFIC FUNCTIONS - Handle "exp", "exponent", and variations
-expr = expr
-  .replace(/\bexponent\s*(\d+(\.\d+)?)/g, "Math.exp($1)")  // "exponent 2"
-  .replace(/\bexponent(\d+(\.\d+)?)/g, "Math.exp($1)")      // "exponent2"
-  .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")        // "exp 2"
-  .replace(/\bexp(\d+(\.\d+)?)/g, "Math.exp($1)")           // "exp2"
-  .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
-  .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
-  .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
-  .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
-  .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
-  .replace(/\bpi\b/g, "Math.PI");
-    // ---------- CLEAN SPACES ----------
     expr = expr.replace(/\s+/g, "");
-
-    console.log("NORMALIZED:", expr);
-
-    // ✅ DIRECT MATH CHECK - If it's just numbers and operators, evaluate directly
-    if (/^[0-9+\-*/().]+$/.test(expr)) {
-      const result = eval(expr);
-      if (!isNaN(result)) {
-        const rounded = Number(result.toFixed(2));
-        screen.value = rounded;
-        addToHistory(expr, rounded);
-        speak(`The answer is ${rounded}`);
-        return;
-      }
-    }
-
-    // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
 
-    // ---------- EVALUATE ----------
     const result = eval(expr);
     if (isNaN(result)) throw "Invalid";
 
@@ -546,6 +484,7 @@ expr = expr
     screen.value = rounded;
     addToHistory(expr, rounded);
     speak(`The answer is ${rounded}`);
+
   } catch (err) {
     console.error(err);
     speak("Sorry, I couldn't understand");
