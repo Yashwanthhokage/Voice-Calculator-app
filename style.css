@@ -334,7 +334,6 @@ body:not(.dark-mode) #micBtn {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
-
 /* ===============================
    DISPLAY SCREEN - COMPLETE STYLE
    =============================== */
@@ -346,11 +345,11 @@ body:not(.dark-mode) #micBtn {
   border-radius: 15px;
   padding: 20px;
   font-size: 36px;
-  font-family: inherit;
+  font-family: 'Arial', sans-serif;
   text-align: right;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
   
-  /* Cursor */
+  /* Make cursor THICK and VISIBLE */
   caret-color: #007aff !important;
   cursor: text;
   
@@ -363,7 +362,7 @@ body:not(.dark-mode) #micBtn {
 body:not(.dark-mode) #screen {
   background-color: #eaeaea !important;
   color: #000 !important;
-  border: 1px solid #ccc;
+  border: 2px solid #ccc;
   caret-color: #007aff !important;
 }
 
@@ -371,11 +370,27 @@ body:not(.dark-mode) #screen {
 body.dark-mode #screen {
   background-color: #2a2a2a !important;
   color: #fff !important;
-  caret-color: #0a84ff !important;
+  caret-color: #00d4ff !important;  /* Brighter cyan for dark mode */
 }
 
-/* Focus state */
+/* Focus state - VISIBLE CURSOR */
 #screen:focus {
   outline: 2px solid #007aff;
-  caret-color: #007aff !important;
+  caret-color: #ff0000 !important;  /* RED cursor when typing - super visible! */
+  animation: cursorBlink 1s infinite;
+}
+
+/* Force cursor visibility on WebKit (Safari/Chrome mobile) */
+#screen::-webkit-input-placeholder {
+  color: transparent;
+}
+
+#screen::placeholder {
+  color: transparent;
+}
+
+/* Animate cursor blink */
+@keyframes cursorBlink {
+  0%, 49% { caret-color: #ff0000; }
+  50%, 100% { caret-color: transparent; }
   }
