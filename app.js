@@ -347,11 +347,11 @@ text=text
       let to = match[3].toLowerCase().trim();
 
       from = currencyAliases[from] 
-    || currencyAliases[from.replace(/s$/, "")]
+    || currencyAliases[from.replace(/$s/, "")]
     || from.toUpperCase();
 
 to = currencyAliases[to] 
-    || currencyAliases[to.replace(/s$/, "")]
+    || currencyAliases[to.replace(/$s/, "")]
     || to.toUpperCase();
       const result = convertCurrency(amount, from, to);
 
