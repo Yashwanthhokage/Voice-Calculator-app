@@ -171,8 +171,24 @@ function calculate() {
     
     const result = eval(expression);
 
-    if (isNaN(result) || !isFinite(result)) {
+    // ✅ CHECK FOR INFINITY OR EXTREMELY LARGE NUMBERS
+    if (isNaN(result)) {
       throw "Invalid result";
+    }
+    
+    if (!isFinite(result)) {
+      screen.value = "Infinity";
+      addToHistory(expression, "Infinity");
+      speak("Result is infinity");
+      return;
+    }
+    
+    // ✅ CHECK FOR VERY LARGE NUMBERS (treat as infinity)
+    if (Math.abs(result) > 1e15) {
+      screen.value = "Infinity";
+      addToHistory(expression, "Infinity");
+      speak("Result is infinity");
+      return;
     }
 
     const rounded = Number(result.toFixed(2));
