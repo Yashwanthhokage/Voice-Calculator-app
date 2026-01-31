@@ -439,11 +439,7 @@ function calculateFromVoiceAI(text) {
     beep(200);
   }
 }
-  try {
-    let expr = text.toLowerCase().trim();
-
-    console.log("VOICE INPUT:", expr);
-
+  
     // ✅ FIX: Handle concatenated words like "oneplus" → "one plus"
     expr = expr
       .replace(/oneplus/g, "one plus")
