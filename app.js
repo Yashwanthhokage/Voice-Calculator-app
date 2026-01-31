@@ -206,6 +206,175 @@ function calculate() {
     }, 1500);
   }
 }
+// ===============================
+// CURRENCY CONVERTER WITH LIVE API
+// ===============================
+
+// Exchange rates (will be updated from API)
+let exchangeRates = {
+  USD: 1,
+  INR: 83.12,
+  EUR: 0.92,
+  GBP: 0.79,
+  JPY: 149.50,
+  AUD: 1.52,
+  CAD: 1.36,
+  CNY: 7.24,
+};
+
+let lastRateUpdate = null;
+
+// Currency aliases for voice recognition
+const currencyAliases = {
+  'dollar': 'USD', 'dollars': 'USD', 'usd': 'USD',
+  'rupee': 'INR', 'rupees': 'INR', 'inr': 'INR', 'indian rupee': 'INR', 'indian rupees': 'INR',
+  'euro': 'EUR', 'euros': 'EUR', 'eur': 'EUR',
+  'pound': 'GBP', 'pounds': 'GBP', 'gbp': 'GBP', 'british pound': 'GBP',
+  'yen': 'JPY', 'jpy': 'JPY', 'japanese yen': 'JPY',
+  'australian dollar': 'AUD', 'aud': 'AUD',
+  'canadian dollar': 'CAD', 'cad': 'CAD',
+  'yuan': 'CNY', 'cny': 'CNY', 'chinese yuan': 'CNY',
+};
+
+// Get DOM elements
+const currencyAmount = document.getElementById('currencyAmount');
+const fromCurrency = document.getElementById('fromCurrency');
+const toCurrency = document.getElementById('toCurrency');
+const convertBtn = document.getElementById('convertBtn');
+const swapBtn = document.getElementById('swapBtn');
+const currencyResultDiv = document.getElementById('currencyResult');
+const currencyResultText = document.getElementById('currencyResultText');
+const rateStatus = document.getElementById('rateStatus');
+
+// Fetch live exchange rates
+async function updateExchangeRates() {
+  try {
+    console.log("Fetching live exchange rates...");
+    rateStatus.textContent = "Updating rates...";
+    
+    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+    
+    if (!response.ok) {
+      throw new Error('API request failed');
+    }
+    
+    const data = await response.json();
+    
+    exchangeRates = {
+      USD: 1,
+      ...data.rates
+    };
+    
+    lastRateUpdate = new Date();
+    
+    console.log("✅ Exchange rates updated:", exchangeRates);
+    rateStatus.textContent = `Rates updated at ${lastRateUpdate.toLocaleTimeString()}`;
+    
+  } catch (error) {
+    console.error("❌ Failed to fetch exchange rates:", error);
+    rateStatus.textContent = "Using offline rates";
+  }
+}
+
+// Convert currency
+function convertCurrency(amount, from, to) {
+  if (!exchangeRates[from] || !exchangeRates[to]) {
+    return null;
+  }
+  
+  const amountInUSD = amount / exchangeRates[from];
+  const convertedAmount = amountInUSD * exchangeRates[to];
+  
+  return convertedAmount;
+}
+
+// Handle manual conversion (button click)
+convertBtn.addEventListener('click', () => {
+  const amount = parseFloat(currencyAmount.value);
+  const from = fromCurrency.value;
+  const to = toCurrency.value;
+  
+  if (isNaN(amount) || amount <= 0) {
+    currencyResultText.textContent = "Please enter a valid amount";
+    currencyResultDiv.className = "currency-result error";
+    speak("Please enter a valid amount");
+    return;
+  }
+  
+  const result = convertCurrency(amount, from, to);
+  
+  if (result !== null) {
+    const rounded = result.toFixed(2);
+    const formattedResult = new Intl.NumberFormat('en-US').format(rounded);
+    
+    currencyResultText.textContent = `${amount} ${from} = ${formattedResult} ${to}`;
+    currencyResultDiv.className = "currency-result success";
+    
+    speak(`${amount} ${from} equals ${rounded} ${to}`);
+    beep(700);
+  } else {
+    currencyResultText.textContent = "Conversion failed";
+    currencyResultDiv.className = "currency-result error";
+  }
+});
+
+// Swap currencies
+swapBtn.addEventListener('click', () => {
+  const temp = fromCurrency.value;
+  fromCurrency.value = toCurrency.value;
+  toCurrency.value = temp;
+  beep(600);
+});
+
+// Handle voice currency conversion
+function handleCurrencyConversion(text) {
+  const patterns = [
+    /(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into)\s+(\w+(?:\s+\w+)?)/i,
+    /convert\s+(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into)\s+(\w+(?:\s+\w+)?)/i,
+  ];
+
+  for (let pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const amount = parseFloat(match[1]);
+      let from = match[2].toLowerCase().trim();
+      let to = match[3].toLowerCase().trim();
+
+      from = currencyAliases[from] || from.toUpperCase();
+      to = currencyAliases[to] || to.toUpperCase();
+
+      const result = convertCurrency(amount, from, to);
+
+      if (result !== null) {
+        const rounded = result.toFixed(2);
+        
+        // Update UI
+        currencyAmount.value = amount;
+        fromCurrency.value = from;
+        toCurrency.value = to;
+        
+        const formattedResult = new Intl.NumberFormat('en-US').format(rounded);
+        currencyResultText.textContent = `${amount} ${from} = ${formattedResult} ${to}`;
+        currencyResultDiv.className = "currency-result success";
+        
+        speak(`${amount} ${from} equals ${rounded} ${to}`);
+        
+        return true;
+      } else {
+        speak("Sorry, I don't recognize those currencies");
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+// Initialize: Fetch rates on page load
+updateExchangeRates();
+
+// Update rates every hour
+setInterval(updateExchangeRates, 60 * 60 * 1000);
 // --------- VOICE INPUT ---------
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -254,6 +423,22 @@ recognition.onerror = function(event) {
 };
 // --------- VOICE COMMAND PARSER ---------
 function calculateFromVoiceAI(text) {
+   try {
+    let expr = text.toLowerCase().trim();
+    console.log("VOICE INPUT:", expr);
+
+    // ✅ CHECK FOR CURRENCY CONVERSION FIRST
+    if (handleCurrencyConversion(expr)) {
+      return; // Currency handled, exit
+    }
+
+    // ... rest of your existing code for calculator
+  } catch (err) {
+    console.error(err);
+    speak("Sorry, I couldn't understand");
+    beep(200);
+  }
+}
   try {
     let expr = text.toLowerCase().trim();
 
