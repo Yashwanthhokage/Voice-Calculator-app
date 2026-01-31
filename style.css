@@ -405,3 +405,28 @@ body:not(.dark-mode) #backspaceBtn {
   0%, 49% { caret-color: #ff0000; }
   50%, 100% { caret-color: transparent; }
   }
+/* ===============================
+   CONTROL BUTTONS ALIGNMENT FIX
+   =============================== */
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+  align-items: center;  /* Vertically center all buttons */
+}
+
+.controls button {
+  flex: 1;
+  height: 56px;  /* Ensure all buttons have same height */
+}
+
+/* Make sure all three buttons have consistent sizing */
+#micBtn,
+#backspaceBtn,
+#clearBtn {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
