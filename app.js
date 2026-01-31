@@ -264,7 +264,7 @@ function calculate() {
 // ===============================
 // CURRENCY CONVERTER
 // ===============================
-let exchangeRates = {
+const exchangeRates = {
   USD: 1,
   INR: 83.12,
   EUR: 0.92,
@@ -274,8 +274,6 @@ let exchangeRates = {
   CAD: 1.36,
   CNY: 7.24,
 };
-
-let lastRateUpdate = null;
 
 const currencyAliases = {
   'dollar': 'USD', 'dollars': 'USD', 'usd': 'USD',
