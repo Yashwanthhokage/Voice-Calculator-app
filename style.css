@@ -26,10 +26,7 @@ button {
   color: var(--button-text);
 }
 
-#screen {
-  background-color: var(--display-bg);
-  color: var(--display-text);
-}
+
 
 /* HEADER */
 .app-header {
@@ -93,19 +90,7 @@ button {
   50%  { transform: translateY(-4px); }
   100% { transform: translateY(0); }
 }
-/* DISPLAY */
-.display input {
-  width: 100%;
-  height: 64px;
-  background: var(--surface);
-  color: var(--on-surface);
-  border: none;
-  border-radius: 8px;
-  padding: 8px;
-  font-size: 2rem;
-  text-align: right;
-  outline: none;
-}
+
 
 /* CONTROL ROW */
 .controls {
@@ -260,11 +245,6 @@ body:not(.dark-mode) .controls button {
   color: #111 !important;
 }
 
-/* Press / active state */
-body:not(.dark-mode) button:active {
-  background-color: #e0e0e0;
-  color: #000 !important;
-}
 
 /* Focus (mobile tap highlight) */
 body:not(.dark-mode) button:focus {
@@ -454,4 +434,47 @@ body.dark-mode #screen {
 #screen:focus {
   outline: none;                  /* Remove default focus outline */
   caret-color: #007aff;
+}
+/* ===============================
+   DISPLAY SCREEN - FINAL VERSION
+   =============================== */
+
+#screen {
+  width: 100%;
+  height: 64px;
+  border: none;
+  border-radius: 15px;
+  padding: 20px;
+  font-size: 36px;
+  font-family: inherit;
+  text-align: right;
+  
+  /* Cursor */
+  caret-color: #007aff !important;
+  cursor: text;
+  
+  /* Remove default input styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Light mode */
+body:not(.dark-mode) #screen {
+  background-color: #eaeaea;
+  color: #000;
+  border: 1px solid #ccc;
+  caret-color: #007aff !important;
+}
+
+/* Dark mode */
+body.dark-mode #screen {
+  background-color: #2a2a2a;
+  color: #fff;
+  caret-color: #00d4ff !important;
+}
+
+/* Focus */
+#screen:focus {
+  outline: 2px solid #007aff;
 }
