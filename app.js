@@ -32,6 +32,21 @@ clearBtn.addEventListener("click", () => {
   screen.value = "";
   beep(400);
 });
+// ---------- BACKSPACE BUTTON ----------
+const backspaceBtn = document.getElementById("backspaceBtn");
+
+backspaceBtn.addEventListener("click", () => {
+  // Remove last character
+  screen.value = screen.value.slice(0, -1);
+  beep(500); // Higher pitch beep for backspace
+});
+
+// Optional: Also allow keyboard backspace
+screen.addEventListener("keydown", (e) => {
+  if (e.key === "Backspace") {
+    beep(500);
+  }
+});
 
 // --------- AUDIO ---------
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
