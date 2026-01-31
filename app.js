@@ -421,9 +421,46 @@ recognition.onerror = function(event) {
   speak("Voice error");
   isProcessing = false; // ✅ Reset on error
 };
-// --------- VOICE COMMAND PARSER ---------
+ ---------- HANDLE √ EXPRESSIONS ----------
+    expr = expr.replace(/\s*√\s*/g, "√");
+    expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
+      if (num1) return `${num1}*Math.sqrt(${num2})`;
+      return `Math.sqrt(${num2})`;
+    });
+    expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
+
+// ✅ SCIENTIFIC FUNCTIONS - Handle "exp", "exponent", and variations
+expr = expr
+  .replace(/\bexponent\s*(\d+(\.\d+)?)/g, "Math.exp($1)")  // "exponent 2"
+  .replace(/\bexponent(\d+(\.\d+)?)/g, "Math.exp($1)")      // "exponent2"
+  .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")        // "exp 2"
+  .replace(/\bexp(\d+(\.\d+)?)/g, "Math.exp($1)")           // "exp2"
+  .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
+  .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
+  .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
+  .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
+  .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
+  .replace(/\bpi\b/g, "Math.PI");
+    // ---------- CLEAN SPACES ----------
+    expr = expr.replace(/\s+/g, "");
+
+    console.log("NORMALIZED:", expr);
+
+    // ✅ DIRECT MATH CHECK - If it's just numbers and operators, evaluate directly
+    if (/^[0-9+\-*/().]+$/.test(expr)) {
+      const result = eval(expr);
+      if (!isNaN(result)) {
+        const rounded = Number(result.toFixed(2));
+        screen.value = rounded;
+        addToHistory(expr, rounded);
+        speak(`The answer is ${rounded}`);
+        return;
+      }
+    }
+
+    // --------- VOICE COMMAND PARSER ---------
 function calculateFromVoiceAI(text) {
-   try {
+  try {
     let expr = text.toLowerCase().trim();
     console.log("VOICE INPUT:", expr);
 
@@ -432,14 +469,6 @@ function calculateFromVoiceAI(text) {
       return; // Currency handled, exit
     }
 
-    // ... rest of your existing code for calculator
-  } catch (err) {
-    console.error(err);
-    speak("Sorry, I couldn't understand");
-    beep(200);
-  }
-}
-  
     // ✅ FIX: Handle concatenated words like "oneplus" → "one plus"
     expr = expr
       .replace(/oneplus/g, "one plus")
@@ -502,18 +531,19 @@ function calculateFromVoiceAI(text) {
     });
     expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
 
-// ✅ SCIENTIFIC FUNCTIONS - Handle "exp", "exponent", and variations
-expr = expr
-  .replace(/\bexponent\s*(\d+(\.\d+)?)/g, "Math.exp($1)")  // "exponent 2"
-  .replace(/\bexponent(\d+(\.\d+)?)/g, "Math.exp($1)")      // "exponent2"
-  .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")        // "exp 2"
-  .replace(/\bexp(\d+(\.\d+)?)/g, "Math.exp($1)")           // "exp2"
-  .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
-  .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
-  .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
-  .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
-  .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
-  .replace(/\bpi\b/g, "Math.PI");
+    // ✅ SCIENTIFIC FUNCTIONS - Handle "exp", "exponent", and variations
+    expr = expr
+      .replace(/\bexponent\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
+      .replace(/\bexponent(\d+(\.\d+)?)/g, "Math.exp($1)")
+      .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
+      .replace(/\bexp(\d+(\.\d+)?)/g, "Math.exp($1)")
+      .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
+      .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
+      .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
+      .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
+      .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
+      .replace(/\bpi\b/g, "Math.PI");
+
     // ---------- CLEAN SPACES ----------
     expr = expr.replace(/\s+/g, "");
 
@@ -542,6 +572,7 @@ expr = expr
     screen.value = rounded;
     addToHistory(expr, rounded);
     speak(`The answer is ${rounded}`);
+    
   } catch (err) {
     console.error(err);
     speak("Sorry, I couldn't understand");
