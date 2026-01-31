@@ -368,21 +368,36 @@ if (swapBtn) {
   });
 }
 
+
 function handleCurrencyConversion(text) {
+  // More flexible patterns
   const patterns = [
-    /(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into)\s+(\w+(?:\s+\w+)?)/i,
-    /convert\s+(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into)\s+(\w+(?:\s+\w+)?)/i,
+    // "100 dollars to rupees"
+    /(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into|2)\s+(\w+(?:\s+\w+)?)/i,
+    // "convert 100 dollars to rupees"
+    /convert\s+(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into|2)\s+(\w+(?:\s+\w+)?)/i,
+    // "100 USD to INR"
+    /(\d+(?:\.\d+)?)\s*([a-z]{3})\s+(?:to|in|into|2)\s+([a-z]{3})/i,
   ];
+
+  console.log("Checking currency conversion for:", text);
 
   for (let pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
+      console.log("Pattern matched:", match);
+      
       const amount = parseFloat(match[1]);
       let from = match[2].toLowerCase().trim();
       let to = match[3].toLowerCase().trim();
 
+      console.log("Before alias lookup - From:", from, "To:", to);
+
+      // Convert aliases to currency codes
       from = currencyAliases[from] || from.toUpperCase();
       to = currencyAliases[to] || to.toUpperCase();
+
+      console.log("After alias lookup - From:", from, "To:", to);
 
       const result = convertCurrency(amount, from, to);
 
@@ -401,12 +416,15 @@ function handleCurrencyConversion(text) {
         
         return true;
       } else {
+        console.log("Currency codes not found in exchangeRates");
+        console.log("Available currencies:", Object.keys(exchangeRates));
         speak("Sorry, I don't recognize those currencies");
         return true;
       }
     }
   }
   
+  console.log("No currency pattern matched");
   return false;
 }
 
