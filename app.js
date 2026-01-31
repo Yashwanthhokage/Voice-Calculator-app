@@ -1,54 +1,38 @@
+// ===============================
+// WAIT FOR PAGE TO LOAD
+// ===============================
+document.addEventListener('DOMContentLoaded', function() {
+
+// ===============================
+// GET ALL DOM ELEMENTS
+// ===============================
 const themeToggle = document.getElementById("themeToggle");
-
-themeToggle.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-
-  // Optional: Speak feedback
-  if (document.body.classList.contains("dark-mode")) {
-    speak("Dark mode activated");
-  } else {
-    speak("Light mode activated");
-  }
-});
-
-// ---------- HISTORY ----------
 const historyList = document.getElementById("historyList");
 const clearHistoryBtn = document.getElementById("clearHistory");
-
-clearHistoryBtn.addEventListener("click", () => {
-  historyList.innerHTML = "";
-  localStorage.removeItem("calcHistory");
-  speak("History cleared");
-  beep(400);
-});
-
-// ---------- SCREEN & BUTTONS ----------
 const screen = document.getElementById("screen");
 const buttons = document.querySelectorAll(".calc-btn");
 const micBtn = document.getElementById("micBtn");
 const clearBtn = document.getElementById("clearBtn");
-
-clearBtn.addEventListener("click", () => {
-  screen.value = "";
-  beep(400);
-});
-// ---------- BACKSPACE BUTTON ----------
 const backspaceBtn = document.getElementById("backspaceBtn");
 
-backspaceBtn.addEventListener("click", () => {
-  // Remove last character
-  screen.value = screen.value.slice(0, -1);
-  beep(500); // Higher pitch beep for backspace
-});
+// Currency converter elements
+const currencyAmount = document.getElementById('currencyAmount');
+const fromCurrency = document.getElementById('fromCurrency');
+const toCurrency = document.getElementById('toCurrency');
+const convertBtn = document.getElementById('convertBtn');
+const swapBtn = document.getElementById('swapBtn');
+const currencyResultDiv = document.getElementById('currencyResult');
+const currencyResultText = document.getElementById('currencyResultText');
+const rateStatus = document.getElementById('rateStatus');
 
-// Optional: Also allow keyboard backspace
-screen.addEventListener("keydown", (e) => {
-  if (e.key === "Backspace") {
-    beep(500);
-  }
-});
+// Debug: Check if elements exist
+console.log("Screen found:", !!screen);
+console.log("Buttons found:", buttons.length);
+console.log("Mic button found:", !!micBtn);
 
-// --------- AUDIO ---------
+// ===============================
+// AUDIO
+// ===============================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function beep(freq = 600) {
@@ -59,7 +43,9 @@ function beep(freq = 600) {
   osc.stop(audioCtx.currentTime + 0.08);
 }
 
-// --------- TEXT TO SPEECH ---------
+// ===============================
+// TEXT TO SPEECH
+// ===============================
 function speak(text) {
   const utter = new SpeechSynthesisUtterance(text);
   utter.rate = 1;
@@ -67,17 +53,54 @@ function speak(text) {
   speechSynthesis.speak(utter);
 }
 
-// --------- HELPER FUNCTIONS ---------
+// ===============================
+// THEME TOGGLE
+// ===============================
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    if (document.body.classList.contains("dark-mode")) {
+      speak("Dark mode activated");
+    } else {
+      speak("Light mode activated");
+    }
+  });
+}
+
+// ===============================
+// HISTORY
+// ===============================
+if (clearHistoryBtn && historyList) {
+  clearHistoryBtn.addEventListener("click", () => {
+    historyList.innerHTML = "";
+    localStorage.removeItem("calcHistory");
+    speak("History cleared");
+    beep(400);
+  });
+}
+
+function addToHistory(expression, result) {
+  if (!historyList) return;
+  
+  const li = document.createElement("li");
+  li.textContent = `${expression} = ${result}`;
+  historyList.prepend(li);
+
+  if (historyList.children.length > 10) {
+    historyList.removeChild(historyList.lastChild);
+  }
+}
+
+// ===============================
+// HELPER FUNCTIONS
+// ===============================
 function degToRad(deg) {
   return deg * Math.PI / 180;
 }
 
 function autoCloseBrackets(expr) {
-  // Count opening and closing brackets
   const open = (expr.match(/\(/g) || []).length;
   const close = (expr.match(/\)/g) || []).length;
-  
-  // Add missing closing brackets
   const missingBrackets = open - close;
   
   if (missingBrackets > 0) {
@@ -87,12 +110,60 @@ function autoCloseBrackets(expr) {
   return expr;
 }
 
-// --------- CALCULATOR ---------
-buttons.forEach(btn => {
-  btn.addEventListener("click", () => handleInput(btn.textContent));
-});
+function isValidExpression(expr) {
+  const invalidPatterns = [
+    /Math\.\w+\(\s*$/,
+    /degToRad\(\s*$/,
+    /[\+\-\*\/]\s*$/,
+  ];
+  
+  for (let pattern of invalidPatterns) {
+    if (pattern.test(expr)) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+// ===============================
+// CALCULATOR BUTTONS
+// ===============================
+if (clearBtn && screen) {
+  clearBtn.addEventListener("click", () => {
+    screen.value = "";
+    beep(400);
+  });
+}
+
+if (backspaceBtn && screen) {
+  backspaceBtn.addEventListener("click", () => {
+    screen.value = screen.value.slice(0, -1);
+    beep(500);
+  });
+}
+
+if (screen) {
+  screen.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace") {
+      beep(500);
+    }
+  });
+}
+
+// Calculator button handlers
+if (buttons && screen) {
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      console.log("Button clicked:", btn.textContent);
+      handleInput(btn.textContent);
+    });
+  });
+}
 
 function handleInput(value) {
+  if (!screen) return;
+  
   switch (value) {
     case "C":
       screen.value = "";
@@ -135,24 +206,10 @@ function handleInput(value) {
       screen.value += value;
   }
 }
-function isValidExpression(expr) {
-  // Check for common invalid patterns
-  const invalidPatterns = [
-    /Math\.\w+\(\s*$/,  // Incomplete Math functions
-    /degToRad\(\s*$/,    // Incomplete degToRad
-    /[\+\-\*\/]\s*$/,    // Ends with operator
-  ];
-  
-  for (let pattern of invalidPatterns) {
-    if (pattern.test(expr)) {
-      return false;
-    }
-  }
-  
-  return true;
-}
 
 function calculate() {
+  if (!screen) return;
+  
   try {
     let expression = screen.value;
     
@@ -162,7 +219,6 @@ function calculate() {
     
     expression = autoCloseBrackets(expression);
     
-    // Validate before evaluating
     if (!isValidExpression(expression)) {
       throw "Incomplete expression";
     }
@@ -171,7 +227,6 @@ function calculate() {
     
     const result = eval(expression);
 
-    // ✅ CHECK FOR INFINITY OR EXTREMELY LARGE NUMBERS
     if (isNaN(result)) {
       throw "Invalid result";
     }
@@ -183,7 +238,6 @@ function calculate() {
       return;
     }
     
-    // ✅ CHECK FOR VERY LARGE NUMBERS (treat as infinity)
     if (Math.abs(result) > 1e15) {
       screen.value = "Infinity";
       addToHistory(expression, "Infinity");
@@ -206,11 +260,10 @@ function calculate() {
     }, 1500);
   }
 }
-// ===============================
-// CURRENCY CONVERTER WITH LIVE API
-// ===============================
 
-// Exchange rates (will be updated from API)
+// ===============================
+// CURRENCY CONVERTER
+// ===============================
 let exchangeRates = {
   USD: 1,
   INR: 83.12,
@@ -224,7 +277,6 @@ let exchangeRates = {
 
 let lastRateUpdate = null;
 
-// Currency aliases for voice recognition
 const currencyAliases = {
   'dollar': 'USD', 'dollars': 'USD', 'usd': 'USD',
   'rupee': 'INR', 'rupees': 'INR', 'inr': 'INR', 'indian rupee': 'INR', 'indian rupees': 'INR',
@@ -236,21 +288,10 @@ const currencyAliases = {
   'yuan': 'CNY', 'cny': 'CNY', 'chinese yuan': 'CNY',
 };
 
-// Get DOM elements
-const currencyAmount = document.getElementById('currencyAmount');
-const fromCurrency = document.getElementById('fromCurrency');
-const toCurrency = document.getElementById('toCurrency');
-const convertBtn = document.getElementById('convertBtn');
-const swapBtn = document.getElementById('swapBtn');
-const currencyResultDiv = document.getElementById('currencyResult');
-const currencyResultText = document.getElementById('currencyResultText');
-const rateStatus = document.getElementById('rateStatus');
-
-// Fetch live exchange rates
 async function updateExchangeRates() {
   try {
     console.log("Fetching live exchange rates...");
-    rateStatus.textContent = "Updating rates...";
+    if (rateStatus) rateStatus.textContent = "Updating rates...";
     
     const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
     
@@ -268,15 +309,14 @@ async function updateExchangeRates() {
     lastRateUpdate = new Date();
     
     console.log("✅ Exchange rates updated:", exchangeRates);
-    rateStatus.textContent = `Rates updated at ${lastRateUpdate.toLocaleTimeString()}`;
+    if (rateStatus) rateStatus.textContent = `Rates updated at ${lastRateUpdate.toLocaleTimeString()}`;
     
   } catch (error) {
     console.error("❌ Failed to fetch exchange rates:", error);
-    rateStatus.textContent = "Using offline rates";
+    if (rateStatus) rateStatus.textContent = "Using offline rates";
   }
 }
 
-// Convert currency
 function convertCurrency(amount, from, to) {
   if (!exchangeRates[from] || !exchangeRates[to]) {
     return null;
@@ -288,45 +328,46 @@ function convertCurrency(amount, from, to) {
   return convertedAmount;
 }
 
-// Handle manual conversion (button click)
-convertBtn.addEventListener('click', () => {
-  const amount = parseFloat(currencyAmount.value);
-  const from = fromCurrency.value;
-  const to = toCurrency.value;
-  
-  if (isNaN(amount) || amount <= 0) {
-    currencyResultText.textContent = "Please enter a valid amount";
-    currencyResultDiv.className = "currency-result error";
-    speak("Please enter a valid amount");
-    return;
-  }
-  
-  const result = convertCurrency(amount, from, to);
-  
-  if (result !== null) {
-    const rounded = result.toFixed(2);
-    const formattedResult = new Intl.NumberFormat('en-US').format(rounded);
+if (convertBtn) {
+  convertBtn.addEventListener('click', () => {
+    const amount = parseFloat(currencyAmount.value);
+    const from = fromCurrency.value;
+    const to = toCurrency.value;
     
-    currencyResultText.textContent = `${amount} ${from} = ${formattedResult} ${to}`;
-    currencyResultDiv.className = "currency-result success";
+    if (isNaN(amount) || amount <= 0) {
+      if (currencyResultText) currencyResultText.textContent = "Please enter a valid amount";
+      if (currencyResultDiv) currencyResultDiv.className = "currency-result error";
+      speak("Please enter a valid amount");
+      return;
+    }
     
-    speak(`${amount} ${from} equals ${rounded} ${to}`);
-    beep(700);
-  } else {
-    currencyResultText.textContent = "Conversion failed";
-    currencyResultDiv.className = "currency-result error";
-  }
-});
+    const result = convertCurrency(amount, from, to);
+    
+    if (result !== null) {
+      const rounded = result.toFixed(2);
+      const formattedResult = new Intl.NumberFormat('en-US').format(rounded);
+      
+      if (currencyResultText) currencyResultText.textContent = `${amount} ${from} = ${formattedResult} ${to}`;
+      if (currencyResultDiv) currencyResultDiv.className = "currency-result success";
+      
+      speak(`${amount} ${from} equals ${rounded} ${to}`);
+      beep(700);
+    } else {
+      if (currencyResultText) currencyResultText.textContent = "Conversion failed";
+      if (currencyResultDiv) currencyResultDiv.className = "currency-result error";
+    }
+  });
+}
 
-// Swap currencies
-swapBtn.addEventListener('click', () => {
-  const temp = fromCurrency.value;
-  fromCurrency.value = toCurrency.value;
-  toCurrency.value = temp;
-  beep(600);
-});
+if (swapBtn) {
+  swapBtn.addEventListener('click', () => {
+    const temp = fromCurrency.value;
+    fromCurrency.value = toCurrency.value;
+    toCurrency.value = temp;
+    beep(600);
+  });
+}
 
-// Handle voice currency conversion
 function handleCurrencyConversion(text) {
   const patterns = [
     /(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into)\s+(\w+(?:\s+\w+)?)/i,
@@ -348,14 +389,13 @@ function handleCurrencyConversion(text) {
       if (result !== null) {
         const rounded = result.toFixed(2);
         
-        // Update UI
-        currencyAmount.value = amount;
-        fromCurrency.value = from;
-        toCurrency.value = to;
+        if (currencyAmount) currencyAmount.value = amount;
+        if (fromCurrency) fromCurrency.value = from;
+        if (toCurrency) toCurrency.value = to;
         
         const formattedResult = new Intl.NumberFormat('en-US').format(rounded);
-        currencyResultText.textContent = `${amount} ${from} = ${formattedResult} ${to}`;
-        currencyResultDiv.className = "currency-result success";
+        if (currencyResultText) currencyResultText.textContent = `${amount} ${from} = ${formattedResult} ${to}`;
+        if (currencyResultDiv) currencyResultDiv.className = "currency-result success";
         
         speak(`${amount} ${from} equals ${rounded} ${to}`);
         
@@ -370,106 +410,67 @@ function handleCurrencyConversion(text) {
   return false;
 }
 
-// Initialize: Fetch rates on page load
+// Initialize exchange rates
 updateExchangeRates();
-
-// Update rates every hour
 setInterval(updateExchangeRates, 60 * 60 * 1000);
-// --------- VOICE INPUT ---------
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
 
-const recognition = new SpeechRecognition();
-recognition.lang = "en-US";
-recognition.continuous = false;
+// ===============================
+// VOICE RECOGNITION
+// ===============================
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-let isProcessing = false; // ✅ NEW: Prevent duplicate processing
+if (SpeechRecognition && micBtn) {
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.continuous = false;
 
-micBtn.addEventListener("click", () => {
-  if (isProcessing) return; // ✅ Ignore if already processing
-  
-  recognition.start();
-  micBtn.classList.add("listening");
-  beep(900);
-});
+  let isProcessing = false;
 
-recognition.onresult = function(event) {
-  if (isProcessing) return; // ✅ Prevent duplicate processing
-  
-  isProcessing = true; // ✅ Lock processing
-  
-  const transcript = event.results[0][0].transcript;
-  micBtn.classList.remove("listening");
-  calculateFromVoiceAI(transcript);
-  
-  // ✅ Unlock after 1 second
-  setTimeout(() => {
+  micBtn.addEventListener("click", () => {
+    if (isProcessing) return;
+    
+    recognition.start();
+    micBtn.classList.add("listening");
+    beep(900);
+  });
+
+  recognition.onresult = function(event) {
+    if (isProcessing) return;
+    
+    isProcessing = true;
+    
+    const transcript = event.results[0][0].transcript;
+    micBtn.classList.remove("listening");
+    calculateFromVoiceAI(transcript);
+    
+    setTimeout(() => {
+      isProcessing = false;
+    }, 1000);
+  };
+
+  recognition.onend = function() {
+    micBtn.classList.remove("listening");
+    setTimeout(() => {
+      isProcessing = false;
+    }, 500);
+  };
+
+  recognition.onerror = function(event) {
+    micBtn.classList.remove("listening");
+    speak("Voice error");
     isProcessing = false;
-  }, 1000);
-};
+  };
+}
 
-recognition.onend = function() {
-  micBtn.classList.remove("listening");
-  // ✅ Ensure unlocking even if no result
-  setTimeout(() => {
-    isProcessing = false;
-  }, 500);
-};
-
-recognition.onerror = function(event) {
-  micBtn.classList.remove("listening");
-  speak("Voice error");
-  isProcessing = false; // ✅ Reset on error
-};
- ---------- HANDLE √ EXPRESSIONS ----------
-    expr = expr.replace(/\s*√\s*/g, "√");
-    expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
-      if (num1) return `${num1}*Math.sqrt(${num2})`;
-      return `Math.sqrt(${num2})`;
-    });
-    expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
-
-// ✅ SCIENTIFIC FUNCTIONS - Handle "exp", "exponent", and variations
-expr = expr
-  .replace(/\bexponent\s*(\d+(\.\d+)?)/g, "Math.exp($1)")  // "exponent 2"
-  .replace(/\bexponent(\d+(\.\d+)?)/g, "Math.exp($1)")      // "exponent2"
-  .replace(/\bexp\s*(\d+(\.\d+)?)/g, "Math.exp($1)")        // "exp 2"
-  .replace(/\bexp(\d+(\.\d+)?)/g, "Math.exp($1)")           // "exp2"
-  .replace(/\bsin\s*(\d+(\.\d+)?)/g, "Math.sin(degToRad($1))")
-  .replace(/\bcos\s*(\d+(\.\d+)?)/g, "Math.cos(degToRad($1))")
-  .replace(/\btan\s*(\d+(\.\d+)?)/g, "Math.tan(degToRad($1))")
-  .replace(/\blog\s*(\d+(\.\d+)?)/g, "Math.log10($1)")
-  .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
-  .replace(/\bpi\b/g, "Math.PI");
-    // ---------- CLEAN SPACES ----------
-    expr = expr.replace(/\s+/g, "");
-
-    console.log("NORMALIZED:", expr);
-
-    // ✅ DIRECT MATH CHECK - If it's just numbers and operators, evaluate directly
-    if (/^[0-9+\-*/().]+$/.test(expr)) {
-      const result = eval(expr);
-      if (!isNaN(result)) {
-        const rounded = Number(result.toFixed(2));
-        screen.value = rounded;
-        addToHistory(expr, rounded);
-        speak(`The answer is ${rounded}`);
-        return;
-      }
-    }
-
-    // --------- VOICE COMMAND PARSER ---------
 function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
     console.log("VOICE INPUT:", expr);
 
-    // ✅ CHECK FOR CURRENCY CONVERSION FIRST
     if (handleCurrencyConversion(expr)) {
-      return; // Currency handled, exit
+      return;
     }
 
-    // ✅ FIX: Handle concatenated words like "oneplus" → "one plus"
     expr = expr
       .replace(/oneplus/g, "one plus")
       .replace(/twoplus/g, "two plus")
@@ -482,14 +483,12 @@ function calculateFromVoiceAI(text) {
       .replace(/nineplus/g, "nine plus")
       .replace(/tenplus/g, "ten plus");
 
-    // ---------- NUMBER WORDS ----------
     const numbers = {
       zero: 0, one: 1, two: 2, three: 3, four: 4,
       five: 5, six: 6, seven: 7, eight: 8, nine: 9,
       ten: 10
     };
 
-    // ---------- NORMALIZE COMMON MISHEARS ----------
     expr = expr
       .replace(/\bcause\b/g, "cos")
       .replace(/\bcourse\b/g, "cos")
@@ -497,7 +496,6 @@ function calculateFromVoiceAI(text) {
       .replace(/\bsquare root of\b/g, "root")
       .replace(/\bsquare root\b/g, "root");
 
-    // ---------- OPERATORS ----------
     expr = expr
       .replace(/\bplus\b/g, "+")
       .replace(/\bminus\b/g, "-")
@@ -506,24 +504,17 @@ function calculateFromVoiceAI(text) {
       .replace(/\bpower|to the power of|raised\b/g, "**")
       .replace(/\bequals|equal to\b/g, "");
 
-    console.log("After operators:", expr);
-
-    // ✅ CONVERT NUMBER WORDS BEFORE SMART PHRASES
     Object.keys(numbers).forEach(word => {
       const re = new RegExp("\\b" + word + "\\b", "g");
       expr = expr.replace(re, numbers[word]);
     });
 
-    console.log("After number conversion:", expr);
-
-    // ---------- SMART PHRASES ----------
     expr = expr
       .replace(/\badd (\d+) and (\d+)\b/g, "$1+$2")
       .replace(/\bsubtract (\d+) from (\d+)\b/g, "$2-$1")
       .replace(/\bmultiply (\d+) and (\d+)\b/g, "$1*$2")
       .replace(/\bdivide (\d+) by (\d+)\b/g, "$1/$2");
 
-    // ---------- HANDLE √ EXPRESSIONS ----------
     expr = expr.replace(/\s*√\s*/g, "√");
     expr = expr.replace(/(\d+)?√(\d+(\.\d+)?)/g, (_, num1, num2) => {
       if (num1) return `${num1}*Math.sqrt(${num2})`;
@@ -531,7 +522,6 @@ function calculateFromVoiceAI(text) {
     });
     expr = expr.replace(/root\s*(\d+(\.\d+)?)/g, "Math.sqrt($1)");
 
-    // ✅ SCIENTIFIC FUNCTIONS - Handle "exp", "exponent", and variations
     expr = expr
       .replace(/\bexponent\s*(\d+(\.\d+)?)/g, "Math.exp($1)")
       .replace(/\bexponent(\d+(\.\d+)?)/g, "Math.exp($1)")
@@ -544,32 +534,28 @@ function calculateFromVoiceAI(text) {
       .replace(/\bln\s*(\d+(\.\d+)?)/g, "Math.log($1)")
       .replace(/\bpi\b/g, "Math.PI");
 
-    // ---------- CLEAN SPACES ----------
     expr = expr.replace(/\s+/g, "");
 
     console.log("NORMALIZED:", expr);
 
-    // ✅ DIRECT MATH CHECK - If it's just numbers and operators, evaluate directly
     if (/^[0-9+\-*/().]+$/.test(expr)) {
       const result = eval(expr);
       if (!isNaN(result)) {
         const rounded = Number(result.toFixed(2));
-        screen.value = rounded;
+        if (screen) screen.value = rounded;
         addToHistory(expr, rounded);
         speak(`The answer is ${rounded}`);
         return;
       }
     }
 
-    // ---------- AUTO-CLOSE BRACKETS ----------
     expr = autoCloseBrackets(expr);
 
-    // ---------- EVALUATE ----------
     const result = eval(expr);
     if (isNaN(result)) throw "Invalid";
 
     const rounded = Number(result.toFixed(2));
-    screen.value = rounded;
+    if (screen) screen.value = rounded;
     addToHistory(expr, rounded);
     speak(`The answer is ${rounded}`);
     
@@ -579,14 +565,7 @@ function calculateFromVoiceAI(text) {
     beep(200);
   }
 }
-// --------- HISTORY ---------
-function addToHistory(expression, result) {
-  const li = document.createElement("li");
-  li.textContent = `${expression} = ${result}`;
-  historyList.prepend(li);
 
-  // Limit history to last 10 entries
-  if (historyList.children.length > 10) {
-    historyList.removeChild(historyList.lastChild);
-  }
-    } 
+console.log("✅ Calculator fully loaded!");
+
+}); // End DOMContentLoaded
