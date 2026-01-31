@@ -586,29 +586,4 @@ function calculateFromVoiceAI(text) {
 
 console.log("✅ Calculator fully loaded!");
 
-}); 
-const calcTabBtn = document.getElementById("calcTabBtn");
-const convTabBtn = document.getElementById("convTabBtn");
-
-const calculatorTab = document.getElementById("calculatorTab");
-const converterTab = document.getElementById("converterTab");
-
-calcTabBtn.addEventListener("click", () => {
-  calculatorTab.style.display = "block";
-  converterTab.style.display = "none";
-
-  calcTabBtn.classList.add("active");
-  convTabBtn.classList.remove("active");
-
-  document.querySelector(".nav-title").textContent = "Calculator";
-});
-
-convTabBtn.addEventListener("click", () => {
-  calculatorTab.style.display = "none";
-  converterTab.style.display = "block";
-
-  convTabBtn.classList.add("active");
-  calcTabBtn.classList.remove("active");
-
-  document.querySelector(".nav-title").textContent = "Converter";
-});// End DOMContentLoaded
+}); // End DOMContentLoaded
