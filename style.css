@@ -380,6 +380,17 @@ body.dark-mode #screen {
   animation: cursorBlink 1s infinite;
 }
 
+/* Backspace button styling */
+#backspaceBtn {
+  background-color: #5a4a4a !important;
+  color: #fff !important;
+  font-size: 28px;
+}
+
+body:not(.dark-mode) #backspaceBtn {
+  background-color: #d4a574 !important;
+  color: #000 !important;
+}
 /* Force cursor visibility on WebKit (Safari/Chrome mobile) */
 #screen::-webkit-input-placeholder {
   color: transparent;
