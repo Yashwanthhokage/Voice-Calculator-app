@@ -485,6 +485,12 @@ function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
     console.log("VOICE INPUT:", expr);
+// ---------- SYMBOL & CURRENCY NORMALIZATION ----------
+expr = expr
+  .replace(/\$/g, " usd ")
+  .replace(/₹/g, " inr ")
+  .replace(/€/, " eur ")
+  .replace(/£/, " gbp ");
 // ---------- CURRENCY NORMALIZATION ----------
 expr = expr
   .replace(/\brupees?\b/g, "inr")
