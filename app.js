@@ -278,7 +278,7 @@ async function updateExchangeRates() {
 
 // Convert currency
 function convertCurrency(amount, from, to) {
-  if (!exchangeRates[from] || !exchangeRates[to]) {
+ if (!exchangeRates[from] || !exchangeRates[to]) {
     return null;
   }
   
@@ -328,11 +328,16 @@ swapBtn.addEventListener('click', () => {
 
 // Handle voice currency conversion
 function handleCurrencyConversion(text) {
+// Normalize currency symbols
+text = text
+  .replace(/\$/g, " dollar ")
+  .replace(/₹/g, " rupee ")
+  .replace(/€/g, " euro ")
+  .replace(/£/g, " pound ");
   const patterns = [
-    /(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into)\s+(\w+(?:\s+\w+)?)/i,
-    /convert\s+(\d+(?:\.\d+)?)\s*(\w+(?:\s+\w+)?)\s+(?:to|in|into)\s+(\w+(?:\s+\w+)?)/i,
-  ];
-
+  /(\d+(?:\.\d+)?)\s*(dollars?|rupees?|euros?|pounds?|yen|usd|inr|eur|gbp|jpy)\s+(?:to|in|into)\s+(dollars?|rupees?|euros?|pounds?|yen|usd|inr|eur|gbp|jpy)/i,
+  /convert\s+(\d+(?:\.\d+)?)\s*(dollars?|rupees?|euros?|pounds?|yen|usd|inr|eur|gbp|jpy)\s+(?:to|in|into)\s+(dollars?|rupees?|euros?|pounds?|yen|usd|inr|eur|gbp|jpy)/i
+];
   for (let pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
@@ -340,8 +345,8 @@ function handleCurrencyConversion(text) {
       let from = match[2].toLowerCase().trim();
       let to = match[3].toLowerCase().trim();
 
-      from = currencyAliases[from] || from.toUpperCase();
-      to = currencyAliases[to] || to.toUpperCase();
+      from = currencyAliases[from] || currencyAliases[from.replace(/s$/, "")] || from.toUpperCase();
+to = currencyAliases[to] || currencyAliases[to.replace(/s$/, "")] || to.toUpperCase();
 
       const result = convertCurrency(amount, from, to);
 
