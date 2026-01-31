@@ -464,6 +464,7 @@ if (SpeechRecognition && micBtn) {
     setTimeout(() => {
       isProcessing = false;
     }, 1000);
+alert("VOICE HEARD: " + transcript);
   };
 
   recognition.onend = function() {
