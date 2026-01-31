@@ -485,6 +485,17 @@ function calculateFromVoiceAI(text) {
   try {
     let expr = text.toLowerCase().trim();
     console.log("VOICE INPUT:", expr);
+// ---------- CURRENCY NORMALIZATION ----------
+expr = expr
+  .replace(/\brupees?\b/g, "inr")
+  .replace(/\bindian rupees?\b/g, "inr")
+  .replace(/\bdollars?\b/g, "usd")
+  .replace(/\bus dollars?\b/g, "usd")
+  .replace(/\beuros?\b/g, "eur")
+  .replace(/\bpounds?\b/g, "gbp")
+  .replace(/\byen\b/g, "jpy")
+  .replace(/\bto\b/g, " to ")
+  .replace(/\bin\b/g, " to ");
 
     if (handleCurrencyConversion(expr)) {
       return;
