@@ -329,7 +329,8 @@ swapBtn.addEventListener('click', () => {
 // Handle voice currency conversion
 function handleCurrencyConversion(text) {
 // Normalize currency symbols
-text = text
+text = text.toLowerCase();
+text=text
   .replace(/\$/g, " dollar ")
   .replace(/₹/g, " rupee ")
   .replace(/€/g, " euro ")
@@ -345,9 +346,13 @@ text = text
       let from = match[2].toLowerCase().trim();
       let to = match[3].toLowerCase().trim();
 
-      from = currencyAliases[from] || currencyAliases[from.replace(/s$/, "")] || from.toUpperCase();
-to = currencyAliases[to] || currencyAliases[to.replace(/s$/, "")] || to.toUpperCase();
+      from = currencyAliases[from] 
+    || currencyAliases[from.replace(/s$/, "")]
+    || from.toUpperCase();
 
+to = currencyAliases[to] 
+    || currencyAliases[to.replace(/s$/, "")]
+    || to.toUpperCase();
       const result = convertCurrency(amount, from, to);
 
       if (result !== null) {
