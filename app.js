@@ -73,9 +73,18 @@ function degToRad(deg) {
 }
 
 function autoCloseBrackets(expr) {
+  // Count opening and closing brackets
   const open = (expr.match(/\(/g) || []).length;
   const close = (expr.match(/\)/g) || []).length;
-  return expr + ")".repeat(open - close);
+  
+  // Add missing closing brackets
+  const missingBrackets = open - close;
+  
+  if (missingBrackets > 0) {
+    expr = expr + ")".repeat(missingBrackets);
+  }
+  
+  return expr;
 }
 
 // --------- CALCULATOR ---------
@@ -126,25 +135,61 @@ function handleInput(value) {
       screen.value += value;
   }
 }
+function isValidExpression(expr) {
+  // Check for common invalid patterns
+  const invalidPatterns = [
+    /Math\.\w+\(\s*$/,  // Incomplete Math functions
+    /degToRad\(\s*$/,    // Incomplete degToRad
+    /[\+\-\*\/]\s*$/,    // Ends with operator
+  ];
+  
+  for (let pattern of invalidPatterns) {
+    if (pattern.test(expr)) {
+      return false;
+    }
+  }
+  
+  return true;
+}
 
 function calculate() {
   try {
-    const expression = autoCloseBrackets(screen.value);
+    let expression = screen.value;
+    
+    if (!expression || expression.trim() === "") {
+      return;
+    }
+    
+    expression = autoCloseBrackets(expression);
+    
+    // Validate before evaluating
+    if (!isValidExpression(expression)) {
+      throw "Incomplete expression";
+    }
+    
+    console.log("Calculating:", expression);
+    
     const result = eval(expression);
 
-    if (isNaN(result)) throw "NaN";
+    if (isNaN(result) || !isFinite(result)) {
+      throw "Invalid result";
+    }
 
     const rounded = Number(result.toFixed(2));
     screen.value = rounded;
     addToHistory(expression, rounded);
     speak(`Result is ${rounded}`);
-  } catch {
+  } catch (err) {
+    console.error("Calculation error:", err);
     screen.value = "Error";
-    speak("Invalid scientific expression");
+    speak("Invalid expression");
     beep(200);
+    
+    setTimeout(() => {
+      screen.value = "";
+    }, 1500);
   }
 }
-
 // --------- VOICE INPUT ---------
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
