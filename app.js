@@ -264,7 +264,7 @@ function calculate() {
 // ===============================
 // CURRENCY CONVERTER
 // ===============================
-const exchangeRates = {
+let exchangeRates = {
   USD: 1,
   INR: 83.12,
   EUR: 0.92,
@@ -274,6 +274,7 @@ const exchangeRates = {
   CAD: 1.36,
   CNY: 7.24,
 };
+let lastRateUpdate = null;
 
 const currencyAliases = {
   'dollar': 'USD', 'dollars': 'USD', 'usd': 'USD',
@@ -368,36 +369,33 @@ if (swapBtn) {
 
 
 function handleCurrencyConversion(text) {
-  // More flexible patterns
+  console.log("🔍 Checking currency conversion for:", text);
+
+  // Flexible patterns that catch natural language
   const patterns = [
-  // "100 dollars to rupees"
-  /(\d+(?:\.\d+)?)\s*(usd|inr|eur|gbp|jpy|cny|rupees?|dollars?|yen|yuan)\s+(?:to|in|into)\s+(usd|inr|eur|gbp|jpy|cny|rupees?|dollars?|yen|yuan)/i,
-
-  // "convert 100 dollars to rupees"
-  /convert\s+(\d+(?:\.\d+)?)\s*(usd|inr|eur|gbp|jpy|cny|rupees?|dollars?|yen|yuan)\s+(?:to|in|into)\s+(usd|inr|eur|gbp|jpy|cny|rupees?|dollars?|yen|yuan)/i,
-
-  // "100 USD to INR"
-  /(\d+(?:\.\d+)?)\s*([a-z]{3})\s+(?:to|in|into)\s+([a-z]{3})/i
-];
-
-  console.log("Checking currency conversion for:", text);
+    // "100 dollars to rupees" or "100 rupees to dollars"
+    /(\d+(?:\.\d+)?)\s+(\w+)\s+(?:to|in|into)\s+(\w+)/i,
+    // "convert 100 dollars to rupees"
+    /convert\s+(\d+(?:\.\d+)?)\s+(\w+)\s+(?:to|in|into)\s+(\w+)/i,
+  ];
 
   for (let pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
-      console.log("Pattern matched:", match);
+      console.log("✅ Pattern matched:", match);
       
       const amount = parseFloat(match[1]);
       let from = match[2].toLowerCase().trim();
       let to = match[3].toLowerCase().trim();
 
-      console.log("Before alias lookup - From:", from, "To:", to);
+      console.log("📝 Before alias - From:", from, "To:", to);
 
       // Convert aliases to currency codes
       from = currencyAliases[from] || from.toUpperCase();
       to = currencyAliases[to] || to.toUpperCase();
 
-      console.log("After alias lookup - From:", from, "To:", to);
+      console.log("💱 After alias - From:", from, "To:", to);
+      console.log("📊 Available rates:", Object.keys(exchangeRates));
 
       const result = convertCurrency(amount, from, to);
 
@@ -413,18 +411,18 @@ function handleCurrencyConversion(text) {
         if (currencyResultDiv) currencyResultDiv.className = "currency-result success";
         
         speak(`${amount} ${from} equals ${rounded} ${to}`);
+        beep(700);
         
         return true;
       } else {
-        console.log("Currency codes not found in exchangeRates");
-        console.log("Available currencies:", Object.keys(exchangeRates));
+        console.log("❌ Currency codes not found");
         speak("Sorry, I don't recognize those currencies");
         return true;
       }
     }
   }
   
-  console.log("No currency pattern matched");
+  console.log("❌ No currency pattern matched");
   return false;
 }
 
